@@ -1,0 +1,1 @@
+require "lita/adapters/slack"
