@@ -1,10 +1,10 @@
 Gem::Specification.new do |spec|
   spec.name          = "lita-slack"
-  spec.version       = "0.0.1"
+  spec.version       = "0.1.0"
   spec.authors       = ["Ken J."]
   spec.email         = ["kenjij@gmail.com"]
   spec.description   = %q{Lita adapter for Slack}
-  spec.summary       = %q{Lita adapter for Slack using Sinatra.}
+  spec.summary       = %q{Lita adapter for Slack using Sinatra. Requires lita-slack-handler gem.}
   spec.homepage      = "https://github.com/kenjij/lita-slack"
   spec.license       = "MIT"
   spec.metadata      = { "lita_plugin_type" => "adapter" }
@@ -15,8 +15,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_runtime_dependency "lita", "~> 2.7"
-  spec.add_runtime_dependency "sinatra"
-  spec.add_runtime_dependency "json"
+  spec.add_runtime_dependency "lita-slack-handler", "~> 0.2"
+  spec.add_runtime_dependency "faraday", ">= 0.8.7"
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
