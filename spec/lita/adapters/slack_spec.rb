@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Lita::Adapters::Slack do
+describe Lita::Adapters::Slack, lita: true do
 	before do
 		Lita.configure do |config|
 			config.adapter.incoming_token = 'aN1NvAlIdDuMmYt0k3n'
@@ -16,13 +16,13 @@ describe Lita::Adapters::Slack do
 	it "registers with Lita" do
 		expect(Lita.adapters[:slack]).to eql(described_class)
 	end
-	
+
 	it "fails without valid config: incoming_token and team_domain" do
 		Lita.clear_config
 		expect(Lita.logger).to receive(:fatal).with(/incoming_token, team_domain/)
 		expect { subject }.to raise_error(SystemExit)
 	end
-	
+
 	describe "#send_messages" do
 		it "sends JSON payload via HTTP POST to Slack channel" do
 			target = double("Lita::Source", room: "CR00M1D")
