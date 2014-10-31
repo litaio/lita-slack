@@ -37,9 +37,9 @@ Lita.configure do |config|
   # Select the Slack adapter
   config.robot.adapter = :slack
   # lita-slack adapter config
-  config.adapter.incoming_token = "aN1NvAlIdDuMmYt0k3n"
-  config.adapter.team_domain = "example"
-  config.adapter.username = "lita"
+  config.adapters.slack.incoming_token = "aN1NvAlIdDuMmYt0k3n"
+  config.adapters.slack.team_domain = "example"
+  config.adapters.slack.username = "lita"
   # Some more handlers and other config
   # .....
 end
