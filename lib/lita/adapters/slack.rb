@@ -50,17 +50,17 @@ module Lita
         return payload
       end
 
-			def http_post(payload)
-				res = Faraday.post do |req|
-					log.debug "Slack::http_post sending payload to #{incoming_url}; length: #{payload.to_json.size}"
-					req.url incoming_url, :token => config.incoming_token
-					req.headers['Content-Type'] = 'application/json'
-					req.body = payload.to_json
-				end
-				log.info "Slack::http_post sent payload with response status #{res.status}"
-				log.debug "Slack::http_post response body: #{res.body}"
-				return res.status
-			end
+      def http_post(payload)
+        res = Faraday.post do |req|
+          log.debug "Slack::http_post sending payload to #{incoming_url}; length: #{payload.to_json.size}"
+          req.url incoming_url, :token => config.incoming_token
+          req.headers['Content-Type'] = 'application/json'
+          req.body = payload.to_json
+        end
+        log.info "Slack::http_post sent payload with response status #{res.status}"
+        log.debug "Slack::http_post response body: #{res.body}"
+        return res.status
+      end
 
       #
       # Accessor shortcuts
