@@ -16,7 +16,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "eventmachine"
   spec.add_runtime_dependency "faraday"
-  spec.add_runtime_dependency "faye-websocket", ">= 0.7.4"
+  spec.add_runtime_dependency "faye-websocket", ">= 0.8.0"
   spec.add_runtime_dependency "lita", ">= 4.0.0"
   spec.add_runtime_dependency "multi_json"
 
