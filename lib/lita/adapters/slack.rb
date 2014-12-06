@@ -28,36 +28,14 @@ module Lita
       end
 
       def send_messages(target, strings)
-        if target.room
-          case target.room[0].upcase
-          when ?C
-            strings.each do |string|
-              ws.send MultiJson.dump({
-                id: 1,
-                type: "message",
-                channel: target.room,
-                text: string
-              })
-            end
-          when ?G
-            strings.each do |string|
-              ws.send MultiJson.dump({
-                id: 1,
-                type: "message",
-                channel: target.room,
-                text: string
-              })
-            end
-          end
-        else
-          strings.each do |string|
-            ws.send MultiJson.dump({
-              id: 1,
-              type: "message",
-              user: target.user.id,
-              text: string
-            })
-          end
+        destination = destination_for(target)
+
+        strings.each do |string|
+          ws.send MultiJson.dump({
+            id: 1,
+            type: 'message',
+            text: string
+          }.merge(destination))
         end
       end
 
@@ -85,6 +63,14 @@ module Lita
 
       def create_users(users_data)
         users_data.each { |user_data| create_user(user_data) }
+      end
+
+      def destination_for(target)
+        if target.room
+          { channel: target.room }
+        else
+          { user: target.user.id }
+        end
       end
 
       def real_name(user_data)
