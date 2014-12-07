@@ -3,6 +3,7 @@ require 'faye/websocket'
 require 'multi_json'
 
 require 'lita/adapters/slack/api'
+require 'lita/adapters/slack/user_creator'
 
 module Lita
   module Adapters
@@ -22,7 +23,7 @@ module Lita
 
         raise response.error if response.error
 
-        create_users(response.users)
+        UserCreator.new.create_users(response.users)
 
         rtm_connect(response.ws_url)
       end
@@ -40,30 +41,21 @@ module Lita
       end
 
       def shut_down
-        return unless EM.reactor_running?
-
-        if defined?(ws)
+        if ws
           log.debug("Closing connection to the Slack Real Time Messaging API.")
           ws.close
         end
 
-        EM.stop
-        log.debug("Disconnected from Slack.")
-        robot.trigger(:disconnected)
+        if EM.reactor_running?
+          EM.stop
+          robot.trigger(:disconnected)
+        end
       end
 
       private
 
       attr_reader :url
       attr_reader :ws
-
-      def create_user(user_data)
-        User.create(user_data["id"], name: real_name(user_data), mention_name: user_data["name"])
-      end
-
-      def create_users(users_data)
-        users_data.each { |user_data| create_user(user_data) }
-      end
 
       def destination_for(target)
         if target.room
@@ -73,18 +65,13 @@ module Lita
         end
       end
 
-      def real_name(user_data)
-        real_name = user_data["real_name"]
-        real_name.size > 0 ? real_name : user_data["name"]
-      end
-
       def receive_message(event)
         data = MultiJson.load(event.data)
         type = data["type"]
 
         case type
         when "hello"
-          log.debug("Connected to the Slack Real Time Messaging API.")
+          log.info("Connected to Slack.")
           robot.trigger(:connected)
         when "message"
           should_dispatch = true
@@ -111,10 +98,10 @@ module Lita
           end
         when "user_change", "team_join"
           log.debug("Updating user data.")
-          create_user(data["user"])
+          UserCreator.new.create_user(data["user"])
         when "bot_added", "bot_changed"
           log.debug("Updating user data for bot.")
-          create_user(data["bot"])
+          UserCreator.new.create_user(data["bot"])
         else
           unless data["reply_to"]
             log.debug("#{type} event received from Slack and will be ignored.")
@@ -122,12 +109,15 @@ module Lita
         end
       end
 
-      def run_loop
+      def rtm_connect
         EM.run do
           log.debug("Connecting to the Slack Real Time Messaging API.")
-          @ws = Faye::WebSocket::Client.new(url)
+          @ws = Faye::WebSocket::Client.new(url, nil, ping: 10)
+
+          ws.on(:open) { log.debug("Connected to the Slack Real Time Messaging API.") }
           ws.on(:message) { |event| receive_message(event) }
-          ws.on(:close) { |event| shut_down }
+          ws.on(:close) { log.info("Disconnected from Slack.") }
+          ws.on(:error) { |event| log.debug("WebSocket error: #{event.message}") }
         end
       end
     end
