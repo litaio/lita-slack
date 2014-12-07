@@ -4,16 +4,11 @@ require 'multi_json'
 
 require 'lita/adapters/slack/api'
 require 'lita/adapters/slack/user_creator'
+require 'lita/adapters/slack/message_handler'
 
 module Lita
   module Adapters
     class Slack < Adapter
-      # Types of messages Lita should dispatch to handlers.
-      SUPPORTED_MESSAGE_SUBTYPES = %w(
-        bot_message
-        me_message
-      )
-
       # Required configuration attributes.
       config :token, type: String, required: true
 
@@ -67,46 +62,8 @@ module Lita
 
       def receive_message(event)
         data = MultiJson.load(event.data)
-        type = data["type"]
 
-        case type
-        when "hello"
-          log.info("Connected to Slack.")
-          robot.trigger(:connected)
-        when "message"
-          should_dispatch = true
-
-          if data["subtype"] && !SUPPORTED_MESSAGE_SUBTYPES.include?(data["subtype"])
-            should_dispatch = false
-          end
-
-          user = User.find_by_id(data["user"]) || User.create(data["user"])
-
-          if data["subtype"] == "bot_message"
-            robot_user = User.find_by_name(robot.name)
-
-            if robot_user && robot_user.id == user.id
-              should_dispatch = false
-            end
-          end
-
-          if should_dispatch
-            source = Source.new(user: user, room: data["channel"] || data["group"])
-            message = Message.new(robot, data["text"], source)
-            log.debug("Dispatching message to Lita from #{user.id}.")
-            robot.receive(message)
-          end
-        when "user_change", "team_join"
-          log.debug("Updating user data.")
-          UserCreator.new.create_user(data["user"])
-        when "bot_added", "bot_changed"
-          log.debug("Updating user data for bot.")
-          UserCreator.new.create_user(data["bot"])
-        else
-          unless data["reply_to"]
-            log.debug("#{type} event received from Slack and will be ignored.")
-          end
-        end
+        MessageHandler.new(robot, data).handle
       end
 
       def rtm_connect
