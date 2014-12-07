@@ -29,6 +29,21 @@ module Lita
         attr_reader :robot
         attr_reader :type
 
+        def dispatch_message(user)
+          source = Source.new(user: user, room: data["channel"] || data["group"])
+          message = Message.new(robot, data["text"], source)
+          log.debug("Dispatching message to Lita from #{user.id}.")
+          robot.receive(message)
+        end
+
+        def from_self?(user)
+          if data["subtype"] == "bot_message"
+            robot_user = User.find_by_name(robot.name)
+
+            robot_user && robot_user.id == user.id
+          end
+        end
+
         def handle_bot_change
           log.debug("Updating user data for bot.")
           UserCreator.new.create_user(data["bot"])
@@ -40,28 +55,13 @@ module Lita
         end
 
         def handle_message
-          should_dispatch = true
-
-          if data["subtype"] && !supported_message_subtypes.include?(data["subtype"])
-            should_dispatch = false
-          end
+          return unless supported_subtype?
 
           user = User.find_by_id(data["user"]) || User.create(data["user"])
 
-          if data["subtype"] == "bot_message"
-            robot_user = User.find_by_name(robot.name)
+          return if from_self?(user)
 
-            if robot_user && robot_user.id == user.id
-              should_dispatch = false
-            end
-          end
-
-          if should_dispatch
-            source = Source.new(user: user, room: data["channel"] || data["group"])
-            message = Message.new(robot, data["text"], source)
-            log.debug("Dispatching message to Lita from #{user.id}.")
-            robot.receive(message)
-          end
+          dispatch_message(user)
         end
 
         def handle_unknown
@@ -78,6 +78,10 @@ module Lita
         # Types of messages Lita should dispatch to handlers.
         def supported_message_subtypes
           %w(bot_message me_message)
+        end
+
+        def supported_subtype?
+          data["subtype"] && supported_message_subtypes.include?(data["subtype"])
         end
       end
     end
