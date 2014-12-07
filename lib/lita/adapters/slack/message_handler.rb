@@ -18,6 +18,8 @@ module Lita
             handle_user_change
           when "bot_added", "bot_changed"
             handle_bot_change
+          when "error"
+            handle_error
           else
             handle_unknown
           end
@@ -47,6 +49,13 @@ module Lita
         def handle_bot_change
           log.debug("Updating user data for bot.")
           UserCreator.new.create_user(data["bot"])
+        end
+
+        def handle_error
+          error = data["error"]
+          code = error["code"]
+          message = error["msg"]
+          log.error("Error with code #{code} received from Slack: #{message}")
         end
 
         def handle_hello
