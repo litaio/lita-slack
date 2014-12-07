@@ -90,7 +90,13 @@ module Lita
         end
 
         def supported_subtype?
-          data["subtype"] && supported_message_subtypes.include?(data["subtype"])
+          subtype = data["subtype"]
+
+          if subtype
+            supported_message_subtypes.include?(subtype)
+          else
+            true
+          end
         end
       end
     end
