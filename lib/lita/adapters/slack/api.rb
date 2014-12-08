@@ -33,6 +33,10 @@ module Lita
             { token: token }.merge(post_data)
           )
 
+          parse_response(response)
+        end
+
+        def parse_response(response)
           unless response.success?
             raise "Slack API call to #{method} failed with status code #{response.status}"
           end
