@@ -1,7 +1,7 @@
 module Lita
   module Adaptesr
     class Slack < Adapter
-      class RTMStartResponse < Struct.new(:error_type, :users, :ws_url, :ims)
+      class RTMStartResponse < Struct.new(:error_type, :users, :websocket_url, :ims)
         def self.build(data)
           new(
             data.fetch("error") { nil }

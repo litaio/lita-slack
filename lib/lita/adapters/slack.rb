@@ -30,7 +30,7 @@ module Lita
 
         populate_data(response)
 
-        rtm_connect(response.ws_url)
+        rtm_connect(response.websocket_url)
       end
 
       def send_messages(target, strings)
@@ -40,7 +40,7 @@ module Lita
               "Cannot send message greater than #{MAX_MESSAGE_CHARS} characters: #{string}"
           end
 
-          ws.send MultiJson.dump({
+          websocket.send MultiJson.dump({
             id: 1,
             type: 'message',
             text: string
@@ -50,9 +50,9 @@ module Lita
       end
 
       def shut_down
-        if ws
+        if websocket
           log.debug("Closing connection to the Slack Real Time Messaging API.")
-          ws.close
+          websocket.close
         end
 
         if EM.reactor_running?
@@ -66,7 +66,7 @@ module Lita
       attr_reader :api
       attr_reader :im_mapping
       attr_reader :url
-      attr_reader :ws
+      attr_reader :websocket
 
       def channel_for(target)
         if target.room
@@ -90,12 +90,12 @@ module Lita
       def rtm_connect
         EM.run do
           log.debug("Connecting to the Slack Real Time Messaging API.")
-          @ws = Faye::WebSocket::Client.new(url, nil, ping: 10)
+          @websocket = Faye::WebSocket::Client.new(url, nil, ping: 10)
 
-          ws.on(:open) { log.debug("Connected to the Slack Real Time Messaging API.") }
-          ws.on(:message) { |event| receive_message(event) }
-          ws.on(:close) { log.info("Disconnected from Slack.") }
-          ws.on(:error) { |event| log.debug("WebSocket error: #{event.message}") }
+          websocket.on(:open) { log.debug("Connected to the Slack Real Time Messaging API.") }
+          websocket.on(:message) { |event| receive_message(event) }
+          websocket.on(:close) { log.info("Disconnected from Slack.") }
+          websocket.on(:error) { |event| log.debug("WebSocket error: #{event.message}") }
         end
       end
     end
