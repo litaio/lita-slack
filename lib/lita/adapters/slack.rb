@@ -10,6 +10,8 @@ require 'lita/adapters/slack/user_creator'
 module Lita
   module Adapters
     class Slack < Adapter
+      MAX_MESSAGE_CHARS = 4000
+
       # Required configuration attributes.
       config :token, type: String, required: true
 
@@ -33,6 +35,11 @@ module Lita
 
       def send_messages(target, strings)
         strings.each do |string|
+          if string.size > MAX_MESSAGE_CHARS
+            raise ArgumentError,
+              "Cannot send message greater than #{MAX_MESSAGE_CHARS} characters: #{string}"
+          end
+
           ws.send MultiJson.dump({
             id: 1,
             type: 'message',
