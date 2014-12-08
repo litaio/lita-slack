@@ -4,7 +4,7 @@ module Lita
       class RTMStartResponse < Struct.new(:error_type, :users, :websocket_url, :ims)
         def self.build(data)
           new(
-            data.fetch("error") { nil }
+            data.fetch("error") { nil },
             data.fetch("users"),
             data.fetch("ims"),
             data.fetch("url")

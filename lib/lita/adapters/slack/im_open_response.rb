@@ -4,7 +4,7 @@ module Lita
       class IMOpenResponse < Struct.new(:error_type, :id)
         def self.build(data)
           new(
-            data.fetch("error") { nil }
+            data.fetch("error") { nil },
             data.fetch("channel").fetch("id")
           )
         end

@@ -43,9 +43,9 @@ module Lita
           websocket.send MultiJson.dump({
             id: 1,
             type: 'message',
-            text: string
+            text: string,
             channel: channel_for(target)
-          }
+          })
         end
       end
 
