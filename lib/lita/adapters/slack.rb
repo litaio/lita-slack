@@ -104,9 +104,3 @@ module Lita
     Lita.register_adapter(:slack, Slack)
   end
 end
-
-Lita.register_handler(:echo) do
-  route /(.+)/i do |response|
-    response.reply response.matches
-  end
-end
