@@ -11,7 +11,7 @@ module Lita
         end
 
         def real_name(user_data)
-          real_name = user_data["real_name"]
+          real_name = user_data["profile"]["real_name"]
           real_name.size > 0 ? real_name : user_data["name"]
         end
       end
