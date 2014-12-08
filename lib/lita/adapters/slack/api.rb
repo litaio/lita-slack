@@ -1,23 +1,26 @@
 require 'faraday'
 
+require 'lita/adapters/slack/rtm_start_response'
+require 'lita/adapters/slack/im_open_response'
+
 module Lita
   module Adapters
     class Slack < Adapter
       class API
-        attr_reader :error
-        attr_reader :users
-        attr_reader :ws_url
-
         def initialize(token)
           @token = token
         end
 
-        def rtm_start
-          response_data = call_api
+        def im_open
+          response_data = call_api("im.open")
 
-          @error = error_message_for(response["error"]) unless response["ok"]
-          @users = response["users"]
-          @ws_url = response["url"]
+          IMOpenResponse.build(response_data)
+        end
+
+        def rtm_start
+          response_data = call_api("rtm.start")
+
+          RTMStartResponse.build(response_data)
         end
 
         private
@@ -25,24 +28,16 @@ module Lita
         attr_reader :token
 
         def call_api(method, post_data = {})
-          response = Faraday.post('https://slack.com/api/rtm.start', token: token)
+          response = Faraday.post(
+            'https://slack.com/api/rtm.start',
+            { token: token }.merge(post_data)
+          )
 
-          raise "Slack API call failed with status code #{response.status}" unless response.success?
+          unless response.success?
+            raise "Slack API call to #{method} failed with status code #{response.status}"
+          end
 
           MultiJson.load(response.body)
-        end
-
-        def error_message_for(error_type)
-          case error
-          when "not_authed"
-            "No authentication token was provided to Slack."
-          when "invalid_auth"
-            "The Slack authentication token provided was not valid."
-          when "account_inactive"
-            "The user or team associated with the provided authentication token has been deleted."
-          else
-            "An unknown error connecting to Slack."
-          end
         end
       end
     end

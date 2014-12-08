@@ -3,8 +3,9 @@ require 'faye/websocket'
 require 'multi_json'
 
 require 'lita/adapters/slack/api'
-require 'lita/adapters/slack/user_creator'
 require 'lita/adapters/slack/message_handler'
+require 'lita/adapters/slack/im_mapping'
+require 'lita/adapters/slack/user_creator'
 
 module Lita
   module Adapters
@@ -12,26 +13,32 @@ module Lita
       # Required configuration attributes.
       config :token, type: String, required: true
 
+      def initialize(robot)
+        super
+
+        @api = API.new(config.token)
+        @im_mapping = IMMapping.new(api)
+      end
+
       # Starts the connection.
       def run
-        response = API.new(config.token).rtm_start
+        response = api.rtm_start
 
         raise response.error if response.error
 
-        UserCreator.new.create_users(response.users)
+        populate_data(response)
 
         rtm_connect(response.ws_url)
       end
 
       def send_messages(target, strings)
-        destination = destination_for(target)
-
         strings.each do |string|
           ws.send MultiJson.dump({
             id: 1,
             type: 'message',
             text: string
-          }.merge(destination))
+            channel: channel_for(target)
+          }
         end
       end
 
@@ -49,15 +56,22 @@ module Lita
 
       private
 
+      attr_reader :api
+      attr_reader :im_mapping
       attr_reader :url
       attr_reader :ws
 
-      def destination_for(target)
+      def channel_for(target)
         if target.room
-          { channel: target.room }
+          target.room
         else
-          { user: target.user.id }
+          im_mapping.im_for(target.user.id)
         end
+      end
+
+      def populate_data(data)
+        UserCreator.new.create_users(data.users)
+        im_mapping.create_ims(data.ims)
       end
 
       def receive_message(event)
