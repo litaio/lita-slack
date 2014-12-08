@@ -78,7 +78,7 @@ module Lita
 
       def populate_data(data)
         UserCreator.new.create_users(data.users)
-        im_mapping.create_ims(data.ims)
+        im_mapping.add_mappings(data.ims)
       end
 
       def receive_message(event)

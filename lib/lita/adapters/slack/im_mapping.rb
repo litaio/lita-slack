@@ -7,12 +7,12 @@ module Lita
           @ims = {}
         end
 
-        def create_im(im_data)
+        def add_mapping(im_data)
           ims[im_data["user"]] = im_data["id"]
         end
 
-        def create_ims(ims_data)
-          ims_data.each { |im_data| create_im(im_data) }
+        def add_mappings(ims_data)
+          ims_data.each { |im_data| add_mapping(im_data) }
         end
 
         def im_for(user_id)
