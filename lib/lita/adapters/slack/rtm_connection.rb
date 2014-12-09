@@ -13,25 +13,15 @@ module Lita
       class RTMConnection
         class << self
           def build(token)
-            # response = api.rtm_start
-
-            # raise response.error if response.error
-
-            # populate_data(response)
-
-            # RTMConnection.new(response.websocket_url)
+            RTMConnection.new(token, API.new(token).rtm_start)
           end
-
-          private
-
-          # def populate_data(data)
-          #   UserCreator.new.create_users(data.users)
-          #   im_mapping.add_mappings(data.ims)
-          # end
         end
 
-        def initialize(websocket_url)
-          @websocket_url = websocket_url
+        def initialize(token, data)
+          @im_mapping = IMMapping.new(token, data.ims)
+          @websocket_url = data.websocket_url
+
+          UserCreator.create_users(data.users)
         end
 
         def im_for(user_id)
