@@ -10,7 +10,7 @@ module Lita
       def run
         return if rtm_connection
 
-        @rtm_connection = RTMConnection.build(config.token)
+        @rtm_connection = RTMConnection.build(robot, config.token)
         rtm_connection.run
       end
 

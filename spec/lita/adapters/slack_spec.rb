@@ -13,7 +13,7 @@ describe Lita::Adapters::Slack, lita: true do
 
     allow(
       described_class::RTMConnection
-    ).to receive(:build).with(token).and_return(rtm_connection)
+    ).to receive(:build).with(robot, token).and_return(rtm_connection)
     allow(rtm_connection).to receive(:run)
   end
 

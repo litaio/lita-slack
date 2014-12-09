@@ -9,9 +9,10 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
     thread.join
   end
 
-  subject { described_class.new(token, rtm_start_response) }
+  subject { described_class.new(robot, token, rtm_start_response) }
 
   let(:api) { instance_double("Lita::Adapters::Slack::API") }
+  let(:robot) { instance_double("Lita::Robot") }
   let(:rtm_start_response) do
     Lita::Adapters::Slack::RTMStartResponse.new([], [], "wss://example.com/")
   end
@@ -25,13 +26,13 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
     end
 
     it "constructs a new RTMConnection with the results of rtm.start data" do
-      expect(described_class.build(token)).to be_an_instance_of(described_class)
+      expect(described_class.build(robot, token)).to be_an_instance_of(described_class)
     end
 
     it "creates users with the results of rtm.start data" do
       expect(Lita::Adapters::Slack::UserCreator).to receive(:create_users)
 
-      described_class.build(token)
+      described_class.build(robot, token)
     end
   end
 

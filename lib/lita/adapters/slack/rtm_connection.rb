@@ -14,12 +14,13 @@ module Lita
         MAX_MESSAGE_BYTES = 16_000
 
         class << self
-          def build(token)
-            RTMConnection.new(token, API.new(token).rtm_start)
+          def build(robot, token)
+            RTMConnection.new(robot, token, API.new(token).rtm_start)
           end
         end
 
-        def initialize(token, data)
+        def initialize(robot, token, data)
+          @robot = robot
           @im_mapping = IMMapping.new(token, data.ims)
           @websocket_url = data.websocket_url
 
@@ -60,6 +61,7 @@ module Lita
 
         private
 
+        attr_reader :robot
         attr_reader :websocket
         attr_reader :websocket_url
 
