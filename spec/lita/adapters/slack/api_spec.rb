@@ -72,4 +72,83 @@ describe Lita::Adapters::Slack::API do
       end
     end
   end
+
+  describe "#rtm_start" do
+    let(:http_status) { 200 }
+    let(:stubs) do
+      Faraday::Adapter::Test::Stubs.new do |stub|
+        stub.post('https://slack.com/api/rtm.start', token: token) do
+          [http_status, {}, http_response]
+        end
+      end
+    end
+
+    describe "with a successful response" do
+      let(:http_response) do
+        MultiJson.dump({
+          ok: true,
+          url: 'wss://example.com/',
+          users: [{ id: 'U023BECGF'}],
+          ims: [{ id: 'D024BFF1M'}]
+        })
+      end
+
+      it "has an array of IMs" do
+        response = subject.rtm_start
+
+        expect(response.ims[0]['id']).to eq('D024BFF1M')
+      end
+
+      it "has an array of users" do
+        response = subject.rtm_start
+
+        expect(response.users[0]['id']).to eq('U023BECGF')
+      end
+
+      it "has a WebSocket URL" do
+        response = subject.rtm_start
+
+        expect(response.websocket_url).to eq('wss://example.com/')
+      end
+
+      it "has no error message" do
+        response = subject.rtm_start
+
+        expect(response.error).to be_nil
+      end
+    end
+
+    describe "with a Slack error" do
+      let(:http_response) do
+        MultiJson.dump({
+          ok: false,
+          error: 'not_authed'
+        })
+      end
+
+      it "returns a response with an error message" do
+        response = subject.rtm_start
+
+        expect(response.error).to eq('not_authed')
+      end
+
+      it "has no ims" do
+        response = subject.rtm_start
+
+        expect(response.ims).to be_nil
+      end
+
+      it "has no users" do
+        response = subject.rtm_start
+
+        expect(response.users).to be_nil
+      end
+
+      it "has no WebSocket URL" do
+        response = subject.rtm_start
+
+        expect(response.websocket_url).to be_nil
+      end
+    end
+  end
 end
