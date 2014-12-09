@@ -1,7 +1,4 @@
-require 'lita/adapters/slack/api'
-require 'lita/adapters/slack/im_mapping'
 require 'lita/adapters/slack/rtm_connection'
-require 'lita/adapters/slack/user_creator'
 
 module Lita
   module Adapters
@@ -11,24 +8,11 @@ module Lita
       # Required configuration attributes.
       config :token, type: String, required: true
 
-      def initialize(robot)
-        super
-
-        @api = API.new(config.token)
-        @im_mapping = IMMapping.new(api)
-      end
-
       # Starts the connection.
       def run
         return if rtm_connection
 
-        response = api.rtm_start
-
-        raise response.error if response.error
-
-        populate_data(response)
-
-        @rtm_connection = RTMConnection.new(response.websocket_url)
+        @rtm_connection = RTMConnection.build(config.token)
         rtm_connection.run
       end
 
@@ -47,8 +31,6 @@ module Lita
 
       private
 
-      attr_reader :api
-      attr_reader :im_mapping
       attr_reader :rtm_connection
 
       def channel_for(target)
@@ -57,11 +39,6 @@ module Lita
         else
           im_mapping.im_for(target.user.id)
         end
-      end
-
-      def populate_data(data)
-        UserCreator.new.create_users(data.users)
-        im_mapping.add_mappings(data.ims)
       end
     end
 

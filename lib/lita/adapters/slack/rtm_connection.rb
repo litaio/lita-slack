@@ -2,12 +2,34 @@ require 'eventmachine'
 require 'faye/websocket'
 require 'multi_json'
 
+require 'lita/adapters/slack/api'
+require 'lita/adapters/slack/im_mapping'
 require 'lita/adapters/slack/message_handler'
+require 'lita/adapters/slack/user_creator'
 
 module Lita
   module Adapters
     class Slack < Adapter
       class RTMConnection
+        class << self
+          def build(token)
+            # response = api.rtm_start
+
+            # raise response.error if response.error
+
+            # populate_data(response)
+
+            # RTMConnection.new(response.websocket_url)
+          end
+
+          private
+
+          # def populate_data(data)
+          #   UserCreator.new.create_users(data.users)
+          #   im_mapping.add_mappings(data.ims)
+          # end
+        end
+
         def initialize(websocket_url)
           @websocket_url = websocket_url
         end
