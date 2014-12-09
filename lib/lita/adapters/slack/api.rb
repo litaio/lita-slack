@@ -47,8 +47,10 @@ module Lita
         end
 
         def connection
-          Faraday.new do |faraday|
-            faraday.adapter(:test, stubs) if stubs
+          if stubs
+            Faraday.new { |faraday| faraday.adapter(:test, stubs) }
+          else
+            Faraday.new
           end
         end
 
