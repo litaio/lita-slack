@@ -15,13 +15,17 @@ module Lita
         def im_open(user_id)
           response_data = call_api("im.open", user: user_id)
 
-          IMOpenResponse.build(response_data)
+          IMOpenResponse.new(response_data["channel"]["id"])
         end
 
         def rtm_start
           response_data = call_api("rtm.start")
 
-          RTMStartResponse.build(response_data)
+          RTMStartResponse.new(
+            response_data["ims"],
+            response_data["users"],
+            response_data["url"]
+          )
         end
 
         private
@@ -35,7 +39,11 @@ module Lita
             { token: token }.merge(post_data)
           )
 
-          parse_response(response, method)
+          data = parse_response(response, method)
+
+          raise "Slack API call to #{method} returned an error: #{data["error"]}." if data["error"]
+
+          data
         end
 
         def connection

@@ -13,7 +13,7 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
 
   let(:api) { instance_double("Lita::Adapters::Slack::API") }
   let(:rtm_start_response) do
-    Lita::Adapters::Slack::RTMStartResponse.new(nil, [], [], "wss://example.com/")
+    Lita::Adapters::Slack::RTMStartResponse.new([], [], "wss://example.com/")
   end
   let(:token) { 'abcd-1234567890-hWYd21AmMH2UHAkx29vb5c1Y' }
   let(:queue) { Queue.new }
