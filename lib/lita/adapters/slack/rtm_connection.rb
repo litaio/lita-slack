@@ -34,6 +34,9 @@ module Lita
           @websocket_url = websocket_url
         end
 
+        def im_for(user_id)
+        end
+
         def run
           EM.run do
             log.debug("Connecting to the Slack Real Time Messaging API.")

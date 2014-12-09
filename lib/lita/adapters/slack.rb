@@ -3,8 +3,6 @@ require 'lita/adapters/slack/rtm_connection'
 module Lita
   module Adapters
     class Slack < Adapter
-      MAX_MESSAGE_CHARS = 4000
-
       # Required configuration attributes.
       config :token, type: String, required: true
 
@@ -37,7 +35,7 @@ module Lita
         if target.room
           target.room
         else
-          im_mapping.im_for(target.user.id)
+          rtm_connection.im_for(target.user.id)
         end
       end
     end
