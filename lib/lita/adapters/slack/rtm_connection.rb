@@ -27,15 +27,17 @@ module Lita
         def im_for(user_id)
         end
 
-        def run
+        def run(queue = nil)
           EM.run do
             log.debug("Connecting to the Slack Real Time Messaging API.")
-            @websocket = Faye::WebSocket::Client.new(url, nil, ping: 10)
+            @websocket = Faye::WebSocket::Client.new(websocket_url, nil, ping: 10)
 
             websocket.on(:open) { log.debug("Connected to the Slack Real Time Messaging API.") }
             websocket.on(:message) { |event| receive_message(event) }
             websocket.on(:close) { log.info("Disconnected from Slack.") }
             websocket.on(:error) { |event| log.debug("WebSocket error: #{event.message}") }
+
+            queue << websocket if queue
           end
         end
 
