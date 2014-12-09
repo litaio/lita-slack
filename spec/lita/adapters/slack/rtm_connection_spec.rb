@@ -1,6 +1,14 @@
 require "spec_helper"
 
 describe Lita::Adapters::Slack::RTMConnection, lita: true do
+  def with_websocket(subject, queue)
+    thread = Thread.new { subject.run(queue) }
+    thread.abort_on_exception = true
+    yield queue.pop
+    subject.shut_down
+    thread.join
+  end
+
   subject { described_class.new(token, rtm_start_response) }
 
   let(:api) { instance_double("Lita::Adapters::Slack::API") }
@@ -29,22 +37,44 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
 
   describe "#run" do
     it "starts the reactor" do
-      thread = Thread.new { subject.run(queue) }
-      thread.abort_on_exception = true
-      queue.pop
-
-      expect(EM.reactor_running?).to be_truthy
-
-      subject.shut_down
+      with_websocket(subject, queue) do |websocket|
+        expect(EM.reactor_running?).to be_truthy
+      end
     end
 
     it "creates the WebSocket" do
-      thread = Thread.new { subject.run(queue) }
-      thread.abort_on_exception = true
+      with_websocket(subject, queue) do |websocket|
+        expect(websocket).to be_an_instance_of(Faye::WebSocket::Client)
+      end
+    end
+  end
 
-      expect(queue.pop).to be_an_instance_of(Faye::WebSocket::Client)
+  describe "#send_messages" do
+    let(:message_json) { MultiJson.dump(id: 1, type: 'message', text: 'hi', channel: channel_id) }
+    let(:channel_id) { 'C024BE91L' }
+    let(:websocket) { instance_double("Faye::WebSocket::Client") }
 
-      subject.shut_down
+    before do
+      # TODO: Don't stub what you don't own!
+      allow(Faye::WebSocket::Client).to receive(:new).and_return(websocket)
+      allow(websocket).to receive(:on)
+      allow(websocket).to receive(:close)
+    end
+
+    it "writes messages to the WebSocket" do
+      with_websocket(subject, queue) do |websocket|
+        expect(websocket).to receive(:send).with(message_json)
+
+        subject.send_messages(channel_id, ['hi'])
+      end
+    end
+
+    it "raises an ArgumentError if the payload is too large" do
+      with_websocket(subject, queue) do |websocket|
+        expect do
+          subject.send_messages(channel_id, ['x' * 16_001])
+        end.to raise_error(ArgumentError)
+      end
     end
   end
 end
