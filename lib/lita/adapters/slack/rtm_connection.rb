@@ -24,6 +24,7 @@ module Lita
           @im_mapping = IMMapping.new(token, data.ims)
           @websocket_url = data.websocket_url
 
+          update_robot(data.self, data.users)
           UserCreator.create_users(data.users)
         end
 
@@ -92,6 +93,13 @@ module Lita
           end
 
           payload
+        end
+
+        def update_robot(self_data, users_data)
+          robot_id = self_data["id"]
+          robot_data = users_data.find { |user_data| user_data["id"] == robot_id }
+          robot.mention_name = robot_data["name"]
+          robot.name = robot_data.fetch("profile", {})["real_name"] || robot.mention_name
         end
       end
     end

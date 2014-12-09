@@ -12,9 +12,24 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
   subject { described_class.new(robot, token, rtm_start_response) }
 
   let(:api) { instance_double("Lita::Adapters::Slack::API") }
-  let(:robot) { instance_double("Lita::Robot") }
+  let(:registry) { Lita::Registry.new }
+  let(:robot) { Lita::Robot.new(registry) }
   let(:rtm_start_response) do
-    Lita::Adapters::Slack::RTMStartResponse.new([], {}, [], "wss://example.com/")
+    Lita::Adapters::Slack::RTMStartResponse.new(
+      [],
+      {
+        "id" => "U12345678",
+        "name" => "carl"
+      },
+      [{
+        "id" => "U12345678",
+        "name" => "carl",
+        "profile" => {
+          "real_name" => "Carl Pug"
+        }
+      }],
+      "wss://example.com/"
+    )
   end
   let(:token) { 'abcd-1234567890-hWYd21AmMH2UHAkx29vb5c1Y' }
   let(:queue) { Queue.new }
@@ -33,6 +48,13 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
       expect(Lita::Adapters::Slack::UserCreator).to receive(:create_users)
 
       described_class.build(robot, token)
+    end
+
+    it "updates the robot's name and mention name with the server data" do
+      described_class.build(robot, token)
+
+      expect(robot.name).to eq('Carl Pug')
+      expect(robot.mention_name).to eq('carl')
     end
   end
 
