@@ -48,7 +48,7 @@ module Lita
 
         def handle_bot_change
           log.debug("Updating user data for bot.")
-          UserCreator.new.create_user(data["bot"])
+          UserCreator.create_user(data["bot"])
         end
 
         def handle_error
@@ -81,7 +81,11 @@ module Lita
 
         def handle_user_change
           log.debug("Updating user data.")
-          UserCreator.new.create_user(data["user"])
+          UserCreator.create_user(data["user"])
+        end
+
+        def log
+          Lita.logger
         end
 
         # Types of messages Lita should dispatch to handlers.
