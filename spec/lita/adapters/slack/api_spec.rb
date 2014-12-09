@@ -76,9 +76,16 @@ describe Lita::Adapters::Slack::API do
         MultiJson.dump({
           ok: true,
           url: 'wss://example.com/',
-          users: [{ id: 'U023BECGF'}],
-          ims: [{ id: 'D024BFF1M'}]
+          users: [{ id: 'U023BECGF' }],
+          ims: [{ id: 'D024BFF1M' }],
+          self: { id: 'U12345678' }
         })
+      end
+
+      it "has data on the bot user" do
+        response = subject.rtm_start
+
+        expect(response.self['id']).to eq('U12345678')
       end
 
       it "has an array of IMs" do

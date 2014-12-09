@@ -23,6 +23,7 @@ module Lita
 
           RTMStartResponse.new(
             response_data["ims"],
+            response_data["self"],
             response_data["users"],
             response_data["url"]
           )
