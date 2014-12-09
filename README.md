@@ -16,11 +16,12 @@ gem "lita-slack"
 
 * `token` (String) – The bot's Slack API token. Create a bot and get its token at https://my.slack.com/services/new/bot.
 
+**Note**: When using lita-slack, the adapter will overwrite the bot's name and mention name with the values set on the server, so `config.robot.name` and `config.robot.mention_name` will have no effect.
+
 ### Example
 
 ``` ruby
 Lita.configure do |config|
-  config.robot.name = "Lita"
   config.robot.adapter = :slack
   config.adapters.slack.token = "abcd-1234567890-hWYd21AmMH2UHAkx29vb5c1Y"
 end
