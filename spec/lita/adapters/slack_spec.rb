@@ -35,4 +35,28 @@ describe Lita::Adapters::Slack, lita: true do
       subject.run
     end
   end
+
+  describe "#shut_down" do
+    before { allow(rtm_connection).to receive(:shut_down) }
+
+    it "shuts down the RTM connection" do
+      expect(rtm_connection).to receive(:shut_down)
+
+      subject.run
+      subject.shut_down
+    end
+
+    it "triggers a :disconnected event" do
+      expect(robot).to receive(:trigger).with(:disconnected)
+
+      subject.run
+      subject.shut_down
+    end
+
+    it "does nothing if the RTM connection hasn't been created yet" do
+      expect(rtm_connection).not_to receive(:shut_down)
+
+      subject.shut_down
+    end
+  end
 end
