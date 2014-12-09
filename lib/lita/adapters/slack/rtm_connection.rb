@@ -11,6 +11,8 @@ module Lita
   module Adapters
     class Slack < Adapter
       class RTMConnection
+        MAX_MESSAGE_BYTES = 16_000
+
         class << self
           def build(token)
             RTMConnection.new(token, API.new(token).rtm_start)
@@ -43,14 +45,7 @@ module Lita
 
         def send_messages(channel, strings)
           strings.each do |string|
-            ensure_safe_message_length(string)
-
-            websocket.send MultiJson.dump({
-              id: 1,
-              type: 'message',
-              text: string,
-              channel: channel
-            })
+            websocket.send(safe_payload_for(channel, string))
           end
         end
 
@@ -68,25 +63,33 @@ module Lita
         attr_reader :websocket
         attr_reader :websocket_url
 
-        def ensure_safe_message_length(string)
-          if string.size > max_message_characters
-            raise ArgumentError,
-              "Cannot send message greater than #{max_message_characters} characters: #{string}"
-          end
-        end
-
         def log
           Lita.logger
         end
 
-        def max_message_characters
-          4000
+        def payload_for(channel, string)
+          MultiJson.dump({
+            id: 1,
+            type: 'message',
+            text: string,
+            channel: channel
+          })
         end
 
         def receive_message(event)
           data = MultiJson.load(event.data)
 
           MessageHandler.new(robot, data).handle
+        end
+
+        def safe_payload_for(channel, string)
+          payload = payload_for(channel, string)
+
+          if payload.size > MAX_MESSAGE_BYTES
+            raise ArgumentError, "Cannot send payload greater than #{MAX_MESSAGE_BYTES} bytes."
+          end
+
+          payload
         end
       end
     end
