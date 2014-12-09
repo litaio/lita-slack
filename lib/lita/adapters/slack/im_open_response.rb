@@ -1,29 +1,12 @@
 module Lita
-  module Adaptesr
+  module Adapters
     class Slack < Adapter
-      class IMOpenResponse < Struct.new(:error_type, :id)
+      class IMOpenResponse < Struct.new(:error, :id)
         def self.build(data)
           new(
             data.fetch("error") { nil },
-            data.fetch("channel").fetch("id")
+            data.fetch("channel") { {} }.fetch("id") { nil }
           )
-        end
-
-        def error
-          case error_type
-          when "user_not_found"
-            "The provided user value was invalid."
-          when "user_not_visible"
-            "Lita is not allowed to see the specified user."
-          when "not_authed"
-            "No authentication token was provided to Slack."
-          when "invalid_auth"
-            "The Slack authentication token provided was not valid."
-          when "account_inactive"
-            "The user or team associated with the provided authentication token has been deleted."
-          else
-            "An unknown error occurred opening the IM."
-          end
         end
       end
     end

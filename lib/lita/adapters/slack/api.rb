@@ -7,12 +7,13 @@ module Lita
   module Adapters
     class Slack < Adapter
       class API
-        def initialize(token)
+        def initialize(token, stubs = nil)
           @token = token
+          @stubs = stubs
         end
 
-        def im_open
-          response_data = call_api("im.open")
+        def im_open(user_id)
+          response_data = call_api("im.open", user: user_id)
 
           IMOpenResponse.build(response_data)
         end
@@ -25,20 +26,27 @@ module Lita
 
         private
 
+        attr_reader :stubs
         attr_reader :token
 
         def call_api(method, post_data = {})
-          response = Faraday.post(
-            'https://slack.com/api/rtm.start',
+          response = connection.post(
+            "https://slack.com/api/#{method}",
             { token: token }.merge(post_data)
           )
 
-          parse_response(response)
+          parse_response(response, method)
         end
 
-        def parse_response(response)
+        def connection
+          Faraday.new do |faraday|
+            faraday.adapter(:test, stubs) if stubs
+          end
+        end
+
+        def parse_response(response, method)
           unless response.success?
-            raise "Slack API call to #{method} failed with status code #{response.status}"
+            raise "Slack API call to #{method} failed with status code #{response.status}."
           end
 
           MultiJson.load(response.body)
