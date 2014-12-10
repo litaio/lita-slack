@@ -2,8 +2,9 @@ module Lita
   module Adapters
     class Slack < Adapter
       class MessageHandler
-        def initialize(robot, data)
+        def initialize(robot, robot_id, data)
           @robot = robot
+          @robot_id = robot_id
           @data = data
           @type = data["type"]
         end
@@ -29,6 +30,7 @@ module Lita
 
         attr_reader :data
         attr_reader :robot
+        attr_reader :robot_id
         attr_reader :type
 
         def body
@@ -56,7 +58,7 @@ module Lita
 
         def handle_bot_change
           log.debug("Updating user data for bot.")
-          UserCreator.create_user(data["bot"])
+          UserCreator.create_user(data["bot"], robot, robot_id)
         end
 
         def handle_error
@@ -89,7 +91,7 @@ module Lita
 
         def handle_user_change
           log.debug("Updating user data.")
-          UserCreator.create_user(data["user"])
+          UserCreator.create_user(data["user"], robot, robot_id)
         end
 
         def log

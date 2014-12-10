@@ -23,9 +23,9 @@ module Lita
           @robot = robot
           @im_mapping = IMMapping.new(token, data.ims)
           @websocket_url = data.websocket_url
+          @robot_id = data.self['id']
 
-          update_robot(data.self, data.users)
-          UserCreator.create_users(data.users)
+          UserCreator.create_users(data.users, robot, robot_id)
         end
 
         def im_for(user_id)
@@ -63,6 +63,7 @@ module Lita
         private
 
         attr_reader :robot
+        attr_reader :robot_id
         attr_reader :websocket
         attr_reader :websocket_url
 

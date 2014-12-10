@@ -1,9 +1,10 @@
 require "spec_helper"
 
 describe Lita::Adapters::Slack::MessageHandler, lita: true do
-  subject { described_class.new(robot, data) }
+  subject { described_class.new(robot, robot_id, data) }
 
   let(:robot) { instance_double('Lita::Robot', name: 'Lita') }
+  let(:robot_id) { 'U12345678' }
 
   describe "#handle" do
     context "with a hello message" do
@@ -93,7 +94,9 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
       it "creates the new user" do
         expect(
           Lita::Adapters::Slack::UserCreator
-        ).to receive(:create_user).with("some user data")
+        ).to receive(:create_user) do |user_data, robot, robot_id|
+          expect(user_data).to eq("some user data")
+        end
 
         subject.handle
       end
@@ -110,7 +113,9 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
       it "creates a new user for the bot" do
         expect(
           Lita::Adapters::Slack::UserCreator
-        ).to receive(:create_user).with("some user data")
+        ).to receive(:create_user) do |user_data, robot, robot_id|
+          expect(user_data).to eq("some user data")
+        end
 
         subject.handle
       end

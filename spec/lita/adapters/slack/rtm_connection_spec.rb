@@ -49,13 +49,6 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
 
       described_class.build(robot, token)
     end
-
-    it "updates the robot's name and mention name with the server data" do
-      described_class.build(robot, token)
-
-      expect(robot.name).to eq('Carl Pug')
-      expect(robot.mention_name).to eq('carl')
-    end
   end
 
   describe "#run" do

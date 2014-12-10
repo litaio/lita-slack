@@ -3,12 +3,16 @@ module Lita
     class Slack < Adapter
       class UserCreator
         class << self
-          def create_user(user_data)
-            User.create(user_data["id"], name: real_name(user_data), mention_name: user_data["name"])
+          def create_user(user_data, robot, robot_id)
+            User.create(
+              user_data["id"],
+              name: real_name(user_data),
+              mention_name: user_data["name"]
+            )
           end
 
-          def create_users(users_data)
-            users_data.each { |user_data| create_user(user_data) }
+          def create_users(users_data, robot, robot_id)
+            users_data.each { |user_data| create_user(user_data, robot, robot_id) }
           end
 
           private
