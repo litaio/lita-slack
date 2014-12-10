@@ -95,13 +95,6 @@ module Lita
 
           payload
         end
-
-        def update_robot(self_data, users_data)
-          robot_id = self_data["id"]
-          robot_data = users_data.find { |user_data| user_data["id"] == robot_id }
-          robot.mention_name = robot_data["name"]
-          robot.name = robot_data.fetch("profile", {})["real_name"] || robot.mention_name
-        end
       end
     end
   end

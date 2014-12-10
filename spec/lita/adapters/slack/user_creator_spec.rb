@@ -1,9 +1,11 @@
 require "spec_helper"
 
 describe Lita::Adapters::Slack::UserCreator do
-  describe ".create_users" do
-    before { allow(Lita::User).to receive(:create) }
+  before { allow(Lita::User).to receive(:create) }
 
+  let(:robot) { instance_double('Lita::Robot') }
+
+  describe ".create_users" do
     let(:bobby_data) do
       {
         'id' => 'U023BECGF',
@@ -13,7 +15,6 @@ describe Lita::Adapters::Slack::UserCreator do
         }
       }
     end
-    let(:robot) { instance_double('Lita::Robot') }
     let(:robot_id) { 'U12345678' }
 
     it "creates Lita users for each user in the provided data" do
@@ -35,6 +36,26 @@ describe Lita::Adapters::Slack::UserCreator do
 
       bobby_data.delete('profile')
       described_class.create_users([bobby_data], robot, robot_id)
+    end
+  end
+
+  describe ".create_user" do
+    let(:robot_id) { 'U12345678' }
+    let(:user_data) do
+      {
+        'id' => robot_id,
+        'name' => 'litabot',
+        'profile' => {
+          'real_name' => 'Lita Bot'
+        }
+      }
+    end
+
+    it "updates the robot's name and mention name if it applicable" do
+      expect(robot).to receive(:name=).with('Lita Bot')
+      expect(robot).to receive(:mention_name=).with('litabot')
+
+      described_class.create_user(user_data, robot, robot_id)
     end
   end
 end
