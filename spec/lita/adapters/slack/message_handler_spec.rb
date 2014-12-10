@@ -3,7 +3,7 @@ require "spec_helper"
 describe Lita::Adapters::Slack::MessageHandler, lita: true do
   subject { described_class.new(robot, robot_id, data) }
 
-  let(:robot) { instance_double('Lita::Robot', name: 'Lita') }
+  let(:robot) { instance_double('Lita::Robot', name: 'Lita', mention_name: 'lita') }
   let(:robot_id) { 'U12345678' }
 
   describe "#handle" do
@@ -37,12 +37,34 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           room: "C2147483705"
         ).and_return(source)
         allow(Lita::Message).to receive(:new).with(robot, "Hello", source).and_return(message)
+        allow(robot).to receive(:receive).with(message)
       end
 
       it "dispatches the message to Lita" do
         expect(robot).to receive(:receive).with(message)
 
         subject.handle
+      end
+
+      context "when the message starts with a Slack-style @-mention" do
+        let(:data) do
+          {
+            "type" => "message",
+            "channel" => "C2147483705",
+            "user" => "U023BECGF",
+            "text" => "<@#{robot_id}>: Hello"
+          }
+        end
+
+        it "converts it to a Lita-style @-mention" do
+          expect(Lita::Message).to receive(:new).with(
+            robot,
+            "@lita: Hello",
+            source
+          ).and_return(message)
+
+          subject.handle
+        end
       end
     end
 
