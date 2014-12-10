@@ -31,9 +31,17 @@ module Lita
         attr_reader :robot
         attr_reader :type
 
+        def body
+          data["text"]
+        end
+
+        def channel
+          data["channel"]
+        end
+
         def dispatch_message(user)
-          source = Source.new(user: user, room: data["channel"] || data["group"])
-          message = Message.new(robot, data["text"], source)
+          source = Source.new(user: user, room: channel)
+          message = Message.new(robot, body, source)
           log.debug("Dispatching message to Lita from #{user.id}.")
           robot.receive(message)
         end

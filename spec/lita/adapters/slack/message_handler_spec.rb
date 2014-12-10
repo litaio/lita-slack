@@ -20,19 +20,26 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
       let(:data) do
         {
           "type" => "message",
+          "channel" => "C2147483705",
           "user" => "U023BECGF",
           "text" => "Hello"
         }
       end
+      let(:message) { instance_double('Lita::Message') }
+      let(:source) { instance_double('Lita::Source') }
+      let(:user) { instance_double('Lita::User', id: 'U023BECGF') }
 
       before do
-        # TODO: These shouldn't be stubbed like this. The details matter here.
-        allow(Lita::Source).to receive(:new).and_return(instance_double('Lita::Source'))
-        allow(Lita::Message).to receive(:new).and_return(instance_double('Lita::Message'))
+        allow(Lita::User).to receive(:find_by_id).and_return(user)
+        allow(Lita::Source).to receive(:new).with(
+          user: user,
+          room: "C2147483705"
+        ).and_return(source)
+        allow(Lita::Message).to receive(:new).with(robot, "Hello", source).and_return(message)
       end
 
       it "dispatches the message to Lita" do
-        expect(robot).to receive(:receive)
+        expect(robot).to receive(:receive).with(message)
 
         subject.handle
       end
