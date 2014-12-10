@@ -51,6 +51,21 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
     end
   end
 
+  describe "#im_for" do
+    before do
+      allow(Lita::Adapters::Slack::IMMapping).to receive(:new).and_return(im_mapping)
+      allow(im_mapping).to receive(:im_for).with('U12345678').and_return('D024BFF1M')
+    end
+
+    let(:im_mapping) { instance_double('Lita::Adapters::Slack::IMMapping') }
+
+    it "delegates to the IMMapping" do
+      with_websocket(subject, queue) do |websocket|
+        expect(subject.im_for('U12345678')).to eq('D024BFF1M')
+      end
+    end
+  end
+
   describe "#run" do
     it "starts the reactor" do
       with_websocket(subject, queue) do |websocket|

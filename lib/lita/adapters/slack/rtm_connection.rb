@@ -29,6 +29,7 @@ module Lita
         end
 
         def im_for(user_id)
+          im_mapping.im_for(user_id)
         end
 
         def run(queue = nil)
@@ -62,6 +63,7 @@ module Lita
 
         private
 
+        attr_reader :im_mapping
         attr_reader :robot
         attr_reader :robot_id
         attr_reader :websocket
