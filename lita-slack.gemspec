@@ -1,8 +1,8 @@
 Gem::Specification.new do |spec|
   spec.name          = "lita-slack"
   spec.version       = "1.0.0"
-  spec.authors       = ["Ken J."]
-  spec.email         = ["kenjij@gmail.com"]
+  spec.authors       = ["Ken J.", "Jimmy Cuadra"]
+  spec.email         = ["kenjij@gmail.com", "jimmy@jimmycuadra.com"]
   spec.description   = %q{Lita adapter for Slack.}
   spec.summary       = %q{Lita adapter for Slack.}
   spec.homepage      = "https://github.com/kenjij/lita-slack"
