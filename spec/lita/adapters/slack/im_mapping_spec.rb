@@ -5,7 +5,7 @@ describe Lita::Adapters::Slack::IMMapping do
 
   let(:api) { instance_double('Lita::Adapters::Slack::API') }
   let(:ims_data) { [{'user' => 'U023BECGF', 'id' => 'D024BFF1M'}] }
-  let(:im_open_response) { Lita::Adapters::Slack::IMOpenResponse.new('D1234567890') }
+  let(:im_open_response) { Lita::Adapters::Slack::IM.new('D1234567890') }
 
   describe "#im_for" do
     context "when a mapping is already stored" do

@@ -1,7 +1,7 @@
 require 'faraday'
 
-require 'lita/adapters/slack/rtm_start_response'
-require 'lita/adapters/slack/im_open_response'
+require 'lita/adapters/slack/team_data'
+require 'lita/adapters/slack/im'
 
 module Lita
   module Adapters
@@ -15,13 +15,13 @@ module Lita
         def im_open(user_id)
           response_data = call_api("im.open", user: user_id)
 
-          IMOpenResponse.new(response_data["channel"]["id"])
+          IM.new(response_data["channel"]["id"])
         end
 
         def rtm_start
           response_data = call_api("rtm.start")
 
-          RTMStartResponse.new(
+          TeamData.new(
             response_data["ims"],
             response_data["self"],
             response_data["users"],

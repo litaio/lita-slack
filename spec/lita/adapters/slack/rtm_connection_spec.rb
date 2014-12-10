@@ -15,7 +15,7 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
   let(:registry) { Lita::Registry.new }
   let(:robot) { Lita::Robot.new(registry) }
   let(:rtm_start_response) do
-    Lita::Adapters::Slack::RTMStartResponse.new(
+    Lita::Adapters::Slack::TeamData.new(
       [],
       {
         "id" => "U12345678",
