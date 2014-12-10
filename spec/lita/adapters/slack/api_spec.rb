@@ -85,19 +85,19 @@ describe Lita::Adapters::Slack::API do
       it "has data on the bot user" do
         response = subject.rtm_start
 
-        expect(response.self['id']).to eq('U12345678')
+        expect(response.self.id).to eq('U12345678')
       end
 
       it "has an array of IMs" do
         response = subject.rtm_start
 
-        expect(response.ims[0]['id']).to eq('D024BFF1M')
+        expect(response.ims[0].id).to eq('D024BFF1M')
       end
 
       it "has an array of users" do
         response = subject.rtm_start
 
-        expect(response.users[0]['id']).to eq('U023BECGF')
+        expect(response.users[0].id).to eq('U023BECGF')
       end
 
       it "has a WebSocket URL" do

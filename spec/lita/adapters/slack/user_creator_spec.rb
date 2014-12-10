@@ -6,15 +6,8 @@ describe Lita::Adapters::Slack::UserCreator do
   let(:robot) { instance_double('Lita::Robot') }
 
   describe ".create_users" do
-    let(:bobby_data) do
-      {
-        'id' => 'U023BECGF',
-        'name' => 'bobby',
-        'profile' => {
-          'real_name' => 'Bobby Tables'
-        }
-      }
-    end
+    let(:real_name) { 'Bobby Tables' }
+    let(:bobby) { Lita::Adapters::Slack::SlackUser.new('U023BECGF', 'bobby', real_name) }
     let(:robot_id) { 'U12345678' }
 
     it "creates Lita users for each user in the provided data" do
@@ -24,38 +17,33 @@ describe Lita::Adapters::Slack::UserCreator do
         mention_name: 'bobby'
       )
 
-      described_class.create_users([bobby_data], robot, robot_id)
+      described_class.create_users([bobby], robot, robot_id)
     end
 
-    it "uses the mention name if no real name is available" do
-      expect(Lita::User).to receive(:create).with(
-        'U023BECGF',
-        name: 'bobby',
-        mention_name: 'bobby'
-      )
+    context "when the Slack user has no real name set" do
+      let(:real_name) { "" }
 
-      bobby_data.delete('profile')
-      described_class.create_users([bobby_data], robot, robot_id)
+      it "uses the mention name if no real name is available" do
+        expect(Lita::User).to receive(:create).with(
+          'U023BECGF',
+          name: 'bobby',
+          mention_name: 'bobby'
+        )
+
+        described_class.create_users([bobby], robot, robot_id)
+      end
     end
   end
 
   describe ".create_user" do
     let(:robot_id) { 'U12345678' }
-    let(:user_data) do
-      {
-        'id' => robot_id,
-        'name' => 'litabot',
-        'profile' => {
-          'real_name' => 'Lita Bot'
-        }
-      }
-    end
+    let(:slack_user) { Lita::Adapters::Slack::SlackUser.new(robot_id, 'litabot', 'Lita Bot') }
 
     it "updates the robot's name and mention name if it applicable" do
       expect(robot).to receive(:name=).with('Lita Bot')
       expect(robot).to receive(:mention_name=).with('litabot')
 
-      described_class.create_user(user_data, robot, robot_id)
+      described_class.create_user(slack_user, robot, robot_id)
     end
   end
 end

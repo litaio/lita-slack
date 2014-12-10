@@ -17,17 +17,8 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
   let(:rtm_start_response) do
     Lita::Adapters::Slack::TeamData.new(
       [],
-      {
-        "id" => "U12345678",
-        "name" => "carl"
-      },
-      [{
-        "id" => "U12345678",
-        "name" => "carl",
-        "profile" => {
-          "real_name" => "Carl Pug"
-        }
-      }],
+      Lita::Adapters::Slack::SlackUser.new('U12345678', 'carl', nil),
+      [Lita::Adapters::Slack::SlackUser.new('U12345678', 'carl', '')],
       "wss://example.com/"
     )
   end

@@ -15,17 +15,17 @@ module Lita
 
         class << self
           def build(robot, token)
-            RTMConnection.new(robot, token, API.new(token).rtm_start)
+            new(robot, token, API.new(token).rtm_start)
           end
         end
 
-        def initialize(robot, token, data)
+        def initialize(robot, token, team_data)
           @robot = robot
-          @im_mapping = IMMapping.new(token, data.ims)
-          @websocket_url = data.websocket_url
-          @robot_id = data.self['id']
+          @im_mapping = IMMapping.new(token, team_data.ims)
+          @websocket_url = team_data.websocket_url
+          @robot_id = team_data.self.id
 
-          UserCreator.create_users(data.users, robot, robot_id)
+          UserCreator.create_users(team_data.users, robot, robot_id)
         end
 
         def im_for(user_id)

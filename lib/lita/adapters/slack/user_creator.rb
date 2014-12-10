@@ -3,32 +3,29 @@ module Lita
     class Slack < Adapter
       class UserCreator
         class << self
-          def create_user(user_data, robot, robot_id)
-            user_id = user_data["id"]
-
+          def create_user(slack_user, robot, robot_id)
             User.create(
-              user_id,
-              name: real_name(user_data),
-              mention_name: user_data["name"]
+              slack_user.id,
+              name: real_name(slack_user),
+              mention_name: slack_user.name
             )
 
-            update_robot(robot, user_data) if user_id == robot_id
+            update_robot(robot, slack_user) if slack_user.id == robot_id
           end
 
-          def create_users(users_data, robot, robot_id)
-            users_data.each { |user_data| create_user(user_data, robot, robot_id) }
+          def create_users(slack_users, robot, robot_id)
+            slack_users.each { |slack_user| create_user(slack_user, robot, robot_id) }
           end
 
           private
 
-          def real_name(user_data)
-            real_name = user_data.fetch("profile", {})["real_name"].to_s
-            real_name.size > 0 ? real_name : user_data["name"]
+          def real_name(slack_user)
+            slack_user.real_name.size > 0 ? slack_user.real_name : slack_user.name
           end
 
-          def update_robot(robot, user_data)
-            robot.name = real_name(user_data)
-            robot.mention_name = user_data["name"]
+          def update_robot(robot, slack_user)
+            robot.name = slack_user.real_name
+            robot.mention_name = slack_user.name
           end
         end
       end
