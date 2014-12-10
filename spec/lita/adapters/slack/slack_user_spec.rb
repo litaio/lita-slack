@@ -29,7 +29,7 @@ describe Lita::Adapters::Slack::SlackUser do
       expect(subject[0].real_name).to eq('Bobby Tables')
       expect(subject[1].id).to eq('U024BE7LH')
       expect(subject[1].name).to eq('carl')
-      expect(subject[1].real_name).to be_nil
+      expect(subject[1].real_name).to eq('')
     end
   end
 end

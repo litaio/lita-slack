@@ -23,7 +23,7 @@ module Lita
         def initialize(id, name, real_name)
           @id = id
           @name = name
-          @real_name = real_name
+          @real_name = real_name.to_s
         end
       end
     end
