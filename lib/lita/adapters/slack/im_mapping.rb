@@ -2,32 +2,32 @@ module Lita
   module Adapters
     class Slack < Adapter
       class IMMapping
-        def initialize(api, ims_data)
+        def initialize(api, ims)
           @api = api
-          @ims = {}
+          @mapping = {}
 
-          add_mappings(ims_data)
+          add_mappings(ims)
         end
 
-        def add_mapping(im_data)
-          ims[im_data["user"]] = im_data["id"]
+        def add_mapping(im)
+          mapping[im.user_id] = im.id
         end
 
-        def add_mappings(ims_data)
-          ims_data.each { |im_data| add_mapping(im_data) }
+        def add_mappings(ims)
+          ims.each { |im| add_mapping(im) }
         end
 
         def im_for(user_id)
-          ims.fetch(user_id) do
+          mapping.fetch(user_id) do
             im = api.im_open(user_id)
-            ims[user_id] = im.id
+            mapping[user_id] = im.id
           end
         end
 
         private
 
         attr_reader :api
-        attr_reader :ims
+        attr_reader :mapping
       end
     end
   end
