@@ -106,18 +106,23 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
     end
 
     context "with a team join message" do
+      # let(:bobby) { Lita::Adapters::Slack::SlackUser.new('U023BECGF', 'bobby', real_name) }
       let(:data) do
         {
           "type" => "team_join",
-          "user" => "some user data"
+          "user" => {
+            "id" => "U023BECGF",
+            "name" => "bobby",
+            "real_name" => "Bobby Tables"
+          }
         }
       end
 
       it "creates the new user" do
         expect(
           Lita::Adapters::Slack::UserCreator
-        ).to receive(:create_user) do |user_data, robot, robot_id|
-          expect(user_data).to eq("some user data")
+        ).to receive(:create_user) do |slack_user, robot, robot_id|
+          expect(slack_user.name).to eq("bobby")
         end
 
         subject.handle
@@ -128,15 +133,18 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
       let(:data) do
         {
           "type" => "bot_added",
-          "bot" => "some user data"
+          "bot" => {
+            "id" => "U01234567",
+            "name" => "foobot"
+          }
         }
       end
 
       it "creates a new user for the bot" do
         expect(
           Lita::Adapters::Slack::UserCreator
-        ).to receive(:create_user) do |user_data, robot, robot_id|
-          expect(user_data).to eq("some user data")
+        ).to receive(:create_user) do |slack_user, robot, robot_id|
+          expect(slack_user.name).to eq("foobot")
         end
 
         subject.handle
