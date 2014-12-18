@@ -66,6 +66,26 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           subject.handle
         end
       end
+
+      context "when the message is nil" do
+        let(:data) do
+          {
+            "type" => "message",
+            "channel" => "C2147483705",
+            "user" => "U023BECGF",
+          }
+        end
+
+        it "dispatches an empty message to Lita" do
+          expect(Lita::Message).to receive(:new).with(
+            robot,
+            "",
+            source
+          ).and_return(message)
+
+          subject.handle
+        end
+      end
     end
 
     context "with a message with an unsupported subtype" do

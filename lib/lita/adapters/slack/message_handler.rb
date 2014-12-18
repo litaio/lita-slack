@@ -34,7 +34,7 @@ module Lita
         attr_reader :type
 
         def body
-          data["text"].sub(/^\s*<@#{robot_id}>/, "@#{robot.mention_name}")
+          data["text"].to_s.sub(/^\s*<@#{robot_id}>/, "@#{robot.mention_name}")
         end
 
         def channel
