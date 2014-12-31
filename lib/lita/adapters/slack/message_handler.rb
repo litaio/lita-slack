@@ -34,7 +34,10 @@ module Lita
         attr_reader :type
 
         def body
-          data["text"].to_s.sub(/^\s*<@#{robot_id}>/, "@#{robot.mention_name}")
+          data["text"].to_s
+              .sub(/^\s*<@#{robot_id}>/, "@#{robot.mention_name}")
+              .gsub(/<(https?|ftp|mailto):\/\/.+\|(.+)>/i, '\2') # link with label, use label
+              .gsub(/<((https?|ftp|mailto):\/\/.+)>/i, '\1') # link without label
         end
 
         def channel
