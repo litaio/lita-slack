@@ -2,11 +2,12 @@ module Lita
   module Adapters
     class Slack < Adapter
       class MessageHandler
-        def initialize(robot, robot_id, data)
+        def initialize(robot, robot_id, data, channel_mapping)
           @robot = robot
           @robot_id = robot_id
           @data = data
           @type = data["type"]
+          @channel_mapping = channel_mapping
         end
 
         def handle
@@ -35,9 +36,47 @@ module Lita
 
         def body
           data["text"].to_s
-              .sub(/^\s*<@#{robot_id}>/, "@#{robot.mention_name}")
-              .gsub(/<(https?|ftp|mailto):\/\/.+\|(.+)>/i, '\2') # link with label, use label
-              .gsub(/<((https?|ftp|mailto):\/\/.+)>/i, '\1') # link without label
+            .sub(/^\s*<@#{robot_id}>/, "@#{robot.mention_name}")
+            .gsub(/&lt;/, '<')
+            .gsub(/&gt;/, '>')
+            .gsub(/&amp;/, '&')
+            .gsub(/<(?<type>[@#!])?(?<link>[^>|]+)(?:\|(?<label>[^>]+))?>/i) do
+              link = Regexp.last_match[:link]
+              label = Regexp.last_match[:label]
+              case Regexp.last_match[:type]
+                when '@'
+                  if label
+                    label
+                  else
+                    user = User.find_by_id link
+                    if user
+                      "@#{user.name}"
+                    else
+                      "@#{link}"
+                    end
+                  end
+                when '#'
+                  if label
+                    label
+                  else
+                    channel = @channel_mapping.channel_for link
+                    if channel
+                      "\##{channel}"
+                    else
+                      "\##{link}"
+                    end
+                  end
+                when '!'
+                  "@#{link}"  if ['channel','group','everyone'].include? link
+                else
+                  link = link.gsub /^mailto:/, ''
+                  if label and not link.include? label
+                    "#{label} (#{link})"
+                  else
+                    link
+                  end
+              end
+            end
         end
 
         def channel
