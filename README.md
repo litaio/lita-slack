@@ -18,11 +18,16 @@ gem "lita-slack"
 
 **Note**: When using lita-slack, the adapter will overwrite the bot's name and mention name with the values set on the server, so `config.robot.name` and `config.robot.mention_name` will have no effect.
 
+### config.robot.admins
+
+Each Slack user has a unique ID that never changes even if their real name or username changes. To populate the `config.robot.admins` attribute, you'll need to use these IDs for each user you want to mark as an administrator. If you're using Lita version 4.1 or greater, you can get a user's ID by sending Lita the command `users find NICKNAME_OF_USER`.
+
 ### Example
 
 ``` ruby
 Lita.configure do |config|
   config.robot.adapter = :slack
+  config.robot.admins = ["U012A3BCD"]
   config.adapters.slack.token = "abcd-1234567890-hWYd21AmMH2UHAkx29vb5c1Y"
 end
 ```
