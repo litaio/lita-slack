@@ -32,6 +32,10 @@ Lita.configure do |config|
 end
 ```
 
+## Joining rooms
+
+Lita will join your default channel after initial setup. To have it join additional channels or private groups, simply invite it to them via your Slack client as you would any normal user.
+
 ## Events
 
 * `:connected` - When the robot has connected to Slack. No payload.
