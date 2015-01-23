@@ -8,8 +8,10 @@ module Lita
   module Adapters
     class Slack < Adapter
       class API
-        def initialize(token, stubs = nil)
-          @token = token
+        def initialize(config, stubs = nil)
+          @token = config[:token]
+          @endpoint = config[:endpoint] || "https://slack.com/api"
+          @proxy = config[:proxy]
           @stubs = stubs
         end
 
@@ -34,10 +36,12 @@ module Lita
 
         attr_reader :stubs
         attr_reader :token
+        attr_reader :proxy
+        attr_reader :endpoint
 
         def call_api(method, post_data = {})
           response = connection.post(
-            "https://slack.com/api/#{method}",
+            "#{endpoint}/#{method}",
             { token: token }.merge(post_data)
           )
 
@@ -52,7 +56,14 @@ module Lita
           if stubs
             Faraday.new { |faraday| faraday.adapter(:test, stubs) }
           else
-            Faraday.new
+            options = {}
+            if !proxy.nil?
+              options = {
+                ssl: {verify:false},
+                proxy: proxy
+              }
+            end
+            Faraday.new(options)
           end
         end
 

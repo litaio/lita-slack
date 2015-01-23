@@ -14,14 +14,15 @@ module Lita
         MAX_MESSAGE_BYTES = 16_000
 
         class << self
-          def build(robot, token)
-            new(robot, token, API.new(token).rtm_start)
+          def build(robot, config)
+            new(robot, config, API.new(config).rtm_start)
           end
         end
 
-        def initialize(robot, token, team_data)
+        def initialize(robot, config, team_data)
           @robot = robot
-          @im_mapping = IMMapping.new(token, team_data.ims)
+          @config = config
+          @im_mapping = IMMapping.new(config[:token], team_data.ims)
           @websocket_url = team_data.websocket_url
           @robot_id = team_data.self.id
 
@@ -35,7 +36,11 @@ module Lita
         def run(queue = nil)
           EM.run do
             log.debug("Connecting to the Slack Real Time Messaging API.")
-            @websocket = Faye::WebSocket::Client.new(websocket_url, nil, ping: 10)
+            options = { ping: 10 }
+            if !@config[:proxy].nil?
+              options[:proxy] = { :origin => @config[:proxy] }
+            end
+            @websocket = Faye::WebSocket::Client.new(websocket_url, nil, options)
 
             websocket.on(:open) { log.debug("Connected to the Slack Real Time Messaging API.") }
             websocket.on(:message) { |event| receive_message(event) }
