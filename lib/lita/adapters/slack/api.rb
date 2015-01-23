@@ -3,6 +3,7 @@ require 'faraday'
 require 'lita/adapters/slack/team_data'
 require 'lita/adapters/slack/slack_im'
 require 'lita/adapters/slack/slack_user'
+require 'lita/adapters/slack/slack_channel'
 
 module Lita
   module Adapters
@@ -26,6 +27,7 @@ module Lita
             SlackIM.from_data_array(response_data["ims"]),
             SlackUser.from_data(response_data["self"]),
             SlackUser.from_data_array(response_data["users"]),
+            SlackChannel.from_data_array(response_data["channels"]),
             response_data["url"]
           )
         end

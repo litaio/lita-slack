@@ -4,6 +4,7 @@ require 'multi_json'
 
 require 'lita/adapters/slack/api'
 require 'lita/adapters/slack/im_mapping'
+require 'lita/adapters/slack/channel_mapping'
 require 'lita/adapters/slack/message_handler'
 require 'lita/adapters/slack/user_creator'
 
@@ -22,6 +23,7 @@ module Lita
         def initialize(robot, token, team_data)
           @robot = robot
           @im_mapping = IMMapping.new(token, team_data.ims)
+          @channel_mapping = ChannelMapping.new(team_data.channels)
           @websocket_url = team_data.websocket_url
           @robot_id = team_data.self.id
 
@@ -64,6 +66,7 @@ module Lita
         private
 
         attr_reader :im_mapping
+        attr_reader :channel_mapping
         attr_reader :robot
         attr_reader :robot_id
         attr_reader :websocket
@@ -85,7 +88,7 @@ module Lita
         def receive_message(event)
           data = MultiJson.load(event.data)
 
-          MessageHandler.new(robot, robot_id, data).handle
+          MessageHandler.new(robot, robot_id, data, channel_mapping).handle
         end
 
         def safe_payload_for(channel, string)
