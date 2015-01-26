@@ -44,7 +44,10 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
 
   describe "#im_for" do
     before do
-      allow(Lita::Adapters::Slack::IMMapping).to receive(:new).and_return(im_mapping)
+      allow(Lita::Adapters::Slack::API).to receive(:new).with(token).and_return(api)
+      allow(
+        Lita::Adapters::Slack::IMMapping
+      ).to receive(:new).with(api, []).and_return(im_mapping)
       allow(im_mapping).to receive(:im_for).with('U12345678').and_return('D024BFF1M')
     end
 
