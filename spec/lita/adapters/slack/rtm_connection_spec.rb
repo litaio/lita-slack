@@ -25,13 +25,11 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
   let(:token) { 'abcd-1234567890-hWYd21AmMH2UHAkx29vb5c1Y' }
   let(:queue) { Queue.new }
   let(:proxy_url) { "http://foo:3128" }
+  let(:config) { Lita::Adapters::Slack.configuration_builder.build }
 
   before do
-    registry.register_adapter(:slack, Lita::Adapters::Slack)
-    registry.config.adapters.slack.token = token
+    config.token = token
   end
-
-  let(:config) { registry.adapters[:slack].new(robot).config }
 
   describe ".build" do
     before do
@@ -79,7 +77,7 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
     end
 
     before do
-      registry.config.adapters.slack.proxy = proxy_url
+      config.proxy = proxy_url
     end
 
     it "creates the WebSocket specifying a proxy" do

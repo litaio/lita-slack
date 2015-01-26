@@ -5,15 +5,11 @@ describe Lita::Adapters::Slack::API do
 
   let(:http_status) { 200 }
   let(:token) { 'abcd-1234567890-hWYd21AmMH2UHAkx29vb5c1Y' }
-  let(:registry) { Lita::Registry.new }
-  let(:robot) { Lita::Robot.new(registry) }
+  let(:config) { Lita::Adapters::Slack.configuration_builder.build }
 
   before do
-    registry.register_adapter(:slack, Lita::Adapters::Slack)
-    registry.config.adapters.slack.token = token
+    config.token = token
   end
-
-  let(:config) { registry.adapters[:slack].new(robot).config }
 
   describe "#im_open" do
     let(:channel_id) { 'D024BFF1M' }
