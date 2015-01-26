@@ -22,7 +22,7 @@ module Lita
         def initialize(robot, config, team_data)
           @robot = robot
           @config = config
-          @im_mapping = IMMapping.new(config[:token], team_data.ims)
+          @im_mapping = IMMapping.new(config.token, team_data.ims)
           @websocket_url = team_data.websocket_url
           @robot_id = team_data.self.id
 
@@ -37,8 +37,8 @@ module Lita
           EM.run do
             log.debug("Connecting to the Slack Real Time Messaging API.")
             options = { ping: 10 }
-            if !@config[:proxy].nil?
-              options[:proxy] = { :origin => @config[:proxy] }
+            unless @config.proxy.nil?
+              options[:proxy] = { :origin => @config.proxy }
             end
             @websocket = Faye::WebSocket::Client.new(websocket_url, nil, options)
 
