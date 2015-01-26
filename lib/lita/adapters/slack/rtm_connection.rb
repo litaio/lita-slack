@@ -22,7 +22,7 @@ module Lita
         def initialize(robot, config, team_data)
           @robot = robot
           @config = config
-          @im_mapping = IMMapping.new(config.token, team_data.ims)
+          @im_mapping = IMMapping.new(API.new(config), team_data.ims)
           @websocket_url = team_data.websocket_url
           @robot_id = team_data.self.id
 
