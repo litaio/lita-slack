@@ -43,7 +43,9 @@ module Lita
 
         def dispatch_message(user)
           source = Source.new(user: user, room: channel)
+          source.private_message! if channel && channel[0] == "D"
           message = Message.new(robot, body, source)
+          message.command! if source.private_message?
           log.debug("Dispatching message to Lita from #{user.id}.")
           robot.receive(message)
         end

@@ -26,8 +26,8 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           "text" => "Hello"
         }
       end
-      let(:message) { instance_double('Lita::Message') }
-      let(:source) { instance_double('Lita::Source') }
+      let(:message) { instance_double('Lita::Message', command!: false) }
+      let(:source) { instance_double('Lita::Source', private_message?: false) }
       let(:user) { instance_double('Lita::User', id: 'U023BECGF') }
 
       before do
@@ -44,6 +44,38 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
         expect(robot).to receive(:receive).with(message)
 
         subject.handle
+      end
+
+      context "when the message is a direct message" do
+        let(:data) do
+          {
+            "type" => "message",
+            "channel" => "D2147483705",
+            "user" => "U023BECGF",
+            "text" => "Hello"
+          }
+        end
+
+        before do
+          allow(Lita::Source).to receive(:new).with(
+            user: user,
+            room: "D2147483705"
+          ).and_return(source)
+          allow(source).to receive(:private_message!).and_return(true)
+          allow(source).to receive(:private_message?).and_return(true)
+        end
+
+        it "marks the source as a private message" do
+          expect(source).to receive(:private_message!)
+
+          subject.handle
+        end
+
+        it "marks the message as a command" do
+          expect(message).to receive(:command!)
+
+          subject.handle
+        end
       end
 
       context "when the message starts with a Slack-style @-mention" do
