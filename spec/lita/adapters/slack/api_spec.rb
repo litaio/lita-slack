@@ -1,10 +1,15 @@
 require "spec_helper"
 
 describe Lita::Adapters::Slack::API do
-  subject { described_class.new(token, stubs) }
+  subject { described_class.new(config, stubs) }
 
   let(:http_status) { 200 }
   let(:token) { 'abcd-1234567890-hWYd21AmMH2UHAkx29vb5c1Y' }
+  let(:config) { Lita::Adapters::Slack.configuration_builder.build }
+
+  before do
+    config.token = token
+  end
 
   describe "#im_open" do
     let(:channel_id) { 'D024BFF1M' }
