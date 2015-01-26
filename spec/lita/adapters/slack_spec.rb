@@ -40,6 +40,9 @@ describe Lita::Adapters::Slack, lita: true do
     let(:room_source) { Lita::Source.new(room: 'C024BE91L') }
     let(:user) { Lita::User.new('U023BECGF') }
     let(:user_source) { Lita::Source.new(user: user) }
+    let(:private_message_source) do
+      Lita::Source.new(room: 'C024BE91L', user: user, private_message: true)
+    end
 
     it "sends messages to rooms" do
       expect(rtm_connection).to receive(:send_messages).with(room_source.room, ['foo'])
@@ -56,7 +59,17 @@ describe Lita::Adapters::Slack, lita: true do
 
       subject.run
 
-      subject.send_messages(Lita::Source.new(user: user), ['foo'])
+      subject.send_messages(user_source, ['foo'])
+    end
+
+    it "sends messages to users when the source is marked as a private message" do
+      allow(rtm_connection).to receive(:im_for).with(user.id).and_return('D024BFF1M')
+
+      expect(rtm_connection).to receive(:send_messages).with('D024BFF1M', ['foo'])
+
+      subject.run
+
+      subject.send_messages(private_message_source, ['foo'])
     end
   end
 
