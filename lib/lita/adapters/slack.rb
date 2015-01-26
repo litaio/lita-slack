@@ -34,10 +34,10 @@ module Lita
       attr_reader :rtm_connection
 
       def channel_for(target)
-        if target.room
-          target.room
-        else
+        if target.private_message?
           rtm_connection.im_for(target.user.id)
+        else
+          target.room
         end
       end
     end
