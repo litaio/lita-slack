@@ -5,12 +5,13 @@ module Lita
     class Slack < Adapter
       # Required configuration attributes.
       config :token, type: String, required: true
+      config :proxy, type: String
 
       # Starts the connection.
       def run
         return if rtm_connection
 
-        @rtm_connection = RTMConnection.build(robot, config.token)
+        @rtm_connection = RTMConnection.build(robot, config)
         rtm_connection.run
       end
 
