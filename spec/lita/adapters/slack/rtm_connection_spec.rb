@@ -79,13 +79,15 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
       end
     end
 
-    before do
-      config.proxy = proxy_url
-    end
+    context "with a proxy server specified" do
+      before do
+        config.proxy = proxy_url
+      end
 
-    it "creates the WebSocket specifying a proxy" do
-      with_websocket(subject, queue) do |websocket|
-        expect(websocket).to be_an_instance_of(Faye::WebSocket::Client)
+      it "creates the WebSocket" do
+        with_websocket(subject, queue) do |websocket|
+          expect(websocket).to be_an_instance_of(Faye::WebSocket::Client)
+        end
       end
     end
   end
