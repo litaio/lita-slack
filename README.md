@@ -18,7 +18,7 @@ gem "lita-slack"
 
 ### Optional attributes
 
-* `proxy` (String) – Specify a HTTP proxy URL. (e.g. "http://squid.mydomain.com:3128")
+* `proxy` (String) – Specify a HTTP proxy URL. (e.g. "http://squid.example.com:3128")
 
 **Note**: When using lita-slack, the adapter will overwrite the bot's name and mention name with the values set on the server, so `config.robot.name` and `config.robot.mention_name` will have no effect.
 
