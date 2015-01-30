@@ -36,11 +36,7 @@ module Lita
         def run(queue = nil)
           EM.run do
             log.debug("Connecting to the Slack Real Time Messaging API.")
-            options = { ping: 10 }
-            unless @config.proxy.nil?
-              options[:proxy] = { :origin => @config.proxy }
-            end
-            @websocket = Faye::WebSocket::Client.new(websocket_url, nil, options)
+            @websocket = Faye::WebSocket::Client.new(websocket_url, nil, websocket_options)
 
             websocket.on(:open) { log.debug("Connected to the Slack Real Time Messaging API.") }
             websocket.on(:message) { |event| receive_message(event) }
@@ -68,6 +64,7 @@ module Lita
 
         private
 
+        attr_reader :config
         attr_reader :im_mapping
         attr_reader :robot
         attr_reader :robot_id
@@ -101,6 +98,12 @@ module Lita
           end
 
           payload
+        end
+
+        def websocket_options
+          options = { ping: 10 }
+          options[:proxy] = { :origin => config.proxy } if config.proxy
+          options
         end
       end
     end
