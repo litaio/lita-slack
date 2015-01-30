@@ -90,6 +90,16 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
         end
       end
     end
+
+    context "when the WebSocket is closed" do
+      it "shuts down the reactor" do
+        with_websocket(subject, queue) do |websocket|
+          websocket.close
+
+          expect(EM.reactor_running?).to be_falsy
+        end
+      end
+    end
   end
 
   describe "#send_messages" do
