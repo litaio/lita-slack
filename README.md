@@ -1,5 +1,8 @@
 # lita-slack
 
+[![Gem Version](https://badge.fury.io/rb/lita-slack.png)](http://badge.fury.io/rb/lita-slack)
+[![Build Status](https://travis-ci.org/kenjij/lita-slack.png?branch=master)](https://travis-ci.org/kenjij/lita-slack)
+
 **lita-slack** is an adapter for [Lita](https://www.lita.io/) that allows you to use the robot with [Slack](https://slack.com/). The current adapter is not compatible with pre-1.0.0 versions, as it now uses Slack's [Real Time Messaging API](https://api.slack.com/rtm).
 
 ## Installation
