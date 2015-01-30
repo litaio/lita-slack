@@ -33,10 +33,14 @@ module Lita
           im_mapping.im_for(user_id)
         end
 
-        def run(queue = nil)
+        def run(queue = nil, options = {})
           EM.run do
             log.debug("Connecting to the Slack Real Time Messaging API.")
-            @websocket = Faye::WebSocket::Client.new(websocket_url, nil, websocket_options)
+            @websocket = Faye::WebSocket::Client.new(
+              websocket_url,
+              nil,
+              websocket_options.merge(options)
+            )
 
             websocket.on(:open) { log.debug("Connected to the Slack Real Time Messaging API.") }
             websocket.on(:message) { |event| receive_message(event) }

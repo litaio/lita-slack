@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Lita::Adapters::Slack::RTMConnection, lita: true do
   def with_websocket(subject, queue)
-    thread = Thread.new { subject.run(queue) }
+    thread = Thread.new { subject.run(queue, ping: nil) }
     thread.abort_on_exception = true
     yield queue.pop
     subject.shut_down
