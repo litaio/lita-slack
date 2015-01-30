@@ -16,6 +16,10 @@ gem "lita-slack"
 
 * `token` (String) – The bot's Slack API token. Create a bot and get its token at https://my.slack.com/services/new/lita.
 
+### Optional attributes
+
+* `proxy` (String) – Specify a HTTP proxy URL. (e.g. "http://squid.mydomain.com:3128")
+
 **Note**: When using lita-slack, the adapter will overwrite the bot's name and mention name with the values set on the server, so `config.robot.name` and `config.robot.mention_name` will have no effect.
 
 ### config.robot.admins
