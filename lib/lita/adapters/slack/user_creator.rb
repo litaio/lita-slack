@@ -6,9 +6,9 @@ module Lita
           def create_user(slack_user, robot, robot_id)
             User.create(
               slack_user.id,
-              name: slack_user.name #real_name(slack_user),
-              mention_name: slack_user.name
-              metadata: {"tz" => slack_user.tz}
+              name: slack_user.name,
+              mention_name: slack_user.name,
+              tz: slack_user.tz
             )
 
             update_robot(robot, slack_user) if slack_user.id == robot_id
