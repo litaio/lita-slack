@@ -8,6 +8,7 @@ module Lita
               slack_user.id,
               name: real_name(slack_user),
               mention_name: slack_user.name
+              metadata: {"tz" => slack_user.tz}
             )
 
             update_robot(robot, slack_user) if slack_user.id == robot_id
