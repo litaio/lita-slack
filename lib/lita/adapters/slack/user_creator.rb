@@ -6,7 +6,7 @@ module Lita
           def create_user(slack_user, robot, robot_id)
             User.create(
               slack_user.id,
-              name: real_name(slack_user),
+              name: slack_user.name #real_name(slack_user),
               mention_name: slack_user.name
               metadata: {"tz" => slack_user.tz}
             )
