@@ -92,9 +92,11 @@ module Lita
         end
 
         def receive_message(event)
-          data = MultiJson.load(event.data)
+          EM.defer do
+            data = MultiJson.load(event.data)
 
-          MessageHandler.new(robot, robot_id, data).handle
+            MessageHandler.new(robot, robot_id, data).handle
+          end
         end
 
         def safe_payload_for(channel, string)
