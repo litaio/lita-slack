@@ -98,9 +98,10 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
 
       expect(message_handler).to receive(:handle)
 
-      with_websocket(subject, queue) do |websocket|
-        websocket.emit('message', event)
-      end
+      # Testing private methods directly is bad, but it's difficult to get
+      # the timing right when testing it by emitting the "message" event on
+      # the WebSocket.
+      subject.send(:receive_message, event)
     end
   end
 
