@@ -56,7 +56,7 @@ module Lita
 
         def send_messages(channel, strings)
           strings.each do |string|
-            websocket.send(safe_payload_for(channel, string))
+            EventLoop.defer { websocket.send(safe_payload_for(channel, string)) }
           end
         end
 

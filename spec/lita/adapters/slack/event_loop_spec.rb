@@ -1,6 +1,17 @@
 require 'spec_helper'
 
 describe Lita::Adapters::Slack::EventLoop, lita: true do
+  describe '.defer' do
+    it 'defers the provided block with Eventmachine' do
+      allow(EM).to receive(:defer).and_yield
+      ran = false
+
+      described_class.defer { ran = true }
+
+      expect(ran).to be_truthy
+    end
+  end
+
   describe '.run' do
     it 'runs the provided block in Eventmachine' do
       allow(EM).to receive(:run).and_yield

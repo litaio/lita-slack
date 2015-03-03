@@ -5,6 +5,10 @@ module Lita
     class Slack < Adapter
       class EventLoop
         class << self
+          def defer
+            EM.defer { yield }
+          end
+
           def run
             EM.run { yield }
           end
