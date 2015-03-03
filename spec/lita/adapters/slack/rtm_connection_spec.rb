@@ -67,6 +67,9 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
   end
 
   describe "#run" do
+    let(:event) { double('Event', data: '{}') }
+    let(:message_handler) { instance_double('Lita::Adapters::Slack::MessageHandler') }
+
     it "creates the WebSocket" do
       with_websocket(subject, queue) do |websocket|
         expect(websocket).to be_an_instance_of(Faye::WebSocket::Client)
@@ -82,6 +85,21 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
         with_websocket(subject, queue) do |websocket|
           expect(websocket).to be_an_instance_of(Faye::WebSocket::Client)
         end
+      end
+    end
+
+    it "dispatches incoming data to MessageHandler" do
+      allow(Lita::Adapters::Slack::EventLoop).to receive(:defer).and_yield
+      allow(Lita::Adapters::Slack::MessageHandler).to receive(:new).with(
+        robot,
+        'U12345678',
+        {}
+      ).and_return(message_handler)
+
+      expect(message_handler).to receive(:handle)
+
+      with_websocket(subject, queue) do |websocket|
+        websocket.emit('message', event)
       end
     end
   end
