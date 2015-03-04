@@ -60,7 +60,7 @@ module Lita
 
         def handle_bot_change
           log.debug("Updating user data for bot.")
-          UserCreator.create_user(SlackUser.from_data(data["bot"]), robot, robot_id)
+          UserCreator.create_user(data["bot"], robot, robot_id)
         end
 
         def handle_error

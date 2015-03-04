@@ -24,7 +24,7 @@ module Lita
           @config = config
           @im_mapping = IMMapping.new(API.new(config), team_data.ims)
           @websocket_url = team_data.websocket_url
-          @robot_id = team_data.self.id
+          @robot_id = team_data.self["id"]
 
           UserCreator.create_users(team_data.users, robot, robot_id)
         end
