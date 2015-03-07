@@ -12,7 +12,6 @@ module Lita
     class Slack < Adapter
       class RTMConnection
         MAX_MESSAGE_BYTES = 160
-        SNIPPET_SUMMARY_CHARS = 32
 
         class << self
           def build(robot, config)
@@ -92,16 +91,6 @@ module Lita
           })
         end
 
-        def snippet_payload_for(channel, string)
-          MultiJson.dump({
-            id: 1,
-            type: 'message',
-            text: "text snippet",
-            attachments: [{fallback: "#{string[0..SNIPPET_SUMMARY_CHARS]}", text: string}],
-            channel: channel
-          })
-        end
-
         def receive_message(event)
           data = MultiJson.load(event.data)
 
@@ -109,13 +98,11 @@ module Lita
         end
 
         def safe_payload_for(channel, string)
-          payload = nil
-          if string.bytesize > MAX_MESSAGE_BYTES
-            log.debug("Cannot send message payload greater than #{MAX_MESSAGE_BYTES} bytes. Converting to snippet.")
-            payload = snippet_payload_for(channel, string)
-          else
-            payload = payload_for(channel, string)
+          if string.bytesize > (MAX_MESSAGE_BYTES - 250)
+            log.debug("Cannot send message payload greater than #{MAX_MESSAGE_BYTES} bytes. Truncating message.")
+            string = "#{string[0..(MAX_MESSAGE_BYTES - 250)]} ... (message truncated)"
           end
+          payload = payload_for(channel, string)
         end
 
         def websocket_options
