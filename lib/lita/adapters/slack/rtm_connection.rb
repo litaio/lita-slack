@@ -107,6 +107,7 @@ module Lita
             log.debug("string length after = #{string.length}")
           end
           payload = payload_for(channel, string)
+          log.debug("payload.size: #{payload.size}")
         end
 
         def websocket_options
