@@ -98,6 +98,7 @@ module Lita
         end
 
         def safe_payload_for(channel, string)
+          log.info("string.bytesize: #{string.bytesize}; MAX_MESSAGE_BYTES: #{MAX_MESSAGE_BYTES}")
           if string.bytesize > (MAX_MESSAGE_BYTES - 250)
             log.debug("Cannot send message payload greater than #{MAX_MESSAGE_BYTES} bytes. Truncating message.")
             string = "#{string[0..(MAX_MESSAGE_BYTES - 250)]} ... (message truncated)"
