@@ -11,6 +11,7 @@ module Lita
   module Adapters
     class Slack < Adapter
       class RTMConnection
+        # MAX_MESSAGE_BYTES = 15_000
         MAX_MESSAGE_BYTES = 160
 
         class << self
@@ -99,10 +100,10 @@ module Lita
 
         def safe_payload_for(channel, string)
           log.debug("string.bytesize: #{string.bytesize}; string.length: #{string.length}; MAX_MESSAGE_BYTES: #{MAX_MESSAGE_BYTES}")
-          if string.bytesize > (MAX_MESSAGE_BYTES - 250)
+          if string.bytesize > MAX_MESSAGE_BYTES
             log.debug("Cannot send message payload greater than #{MAX_MESSAGE_BYTES} bytes. Truncating message.")
             log.debug("string length before = #{string.length}")
-            string = "#{string[0..(MAX_MESSAGE_BYTES - 250)]} ... (message truncated)"
+            string = "#{string[0..MAX_MESSAGE_BYTES]} ... (message truncated)"
             log.debug("string length after = #{string.length}")
           end
           payload = payload_for(channel, string)
