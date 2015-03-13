@@ -14,11 +14,12 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
   let(:api) { instance_double("Lita::Adapters::Slack::API") }
   let(:registry) { Lita::Registry.new }
   let(:robot) { Lita::Robot.new(registry) }
+  let(:raw_user_data) { Hash.new }
   let(:rtm_start_response) do
     Lita::Adapters::Slack::TeamData.new(
       [],
-      Lita::Adapters::Slack::SlackUser.new('U12345678', 'carl', nil),
-      [Lita::Adapters::Slack::SlackUser.new('U12345678', 'carl', '')],
+      Lita::Adapters::Slack::SlackUser.new('U12345678', 'carl', nil, raw_user_data),
+      [Lita::Adapters::Slack::SlackUser.new('U12345678', 'carl', '', raw_user_data)],
       "wss://example.com/"
     )
   end
