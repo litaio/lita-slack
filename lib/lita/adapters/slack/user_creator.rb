@@ -11,7 +11,7 @@ module Lita
             )
 
             update_robot(robot, slack_user) if slack_user.id == robot_id
-            robot.trigger(:slack_user_created, user_id: slack_user.id, raw_data: slack_user.raw_data)
+            robot.trigger(:slack_user_created, slack_user: slack_user.raw_data)
           end
 
           def create_users(slack_users, robot, robot_id)
