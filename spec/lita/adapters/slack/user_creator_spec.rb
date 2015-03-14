@@ -25,7 +25,7 @@ describe Lita::Adapters::Slack::UserCreator do
       )
       expect(robot).to receive(:trigger).with(
         :slack_user_created,
-        slack_user: slack_data
+        slack_user: bobby
       )
 
       described_class.create_users([bobby], robot, robot_id)
