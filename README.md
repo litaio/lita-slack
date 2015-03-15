@@ -47,6 +47,7 @@ Lita will join your default channel after initial setup. To have it join additio
 
 * `:connected` - When the robot has connected to Slack. No payload.
 * `:disconnected` - When the robot has disconnected from Slack. No payload.
+* `:slack_user_created` - When the robot creates/updates a user's info - name, mention name, etc..., as directed by Slack. The payload has a single object, under the `:slack_user` key.
 
 ## License
 
