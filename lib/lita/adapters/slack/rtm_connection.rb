@@ -26,7 +26,9 @@ module Lita
           @websocket_url = team_data.websocket_url
           @robot_id = team_data.self.id
 
-          UserCreator.create_users(team_data.users, robot, robot_id)
+          EventLoop.defer do
+            UserCreator.create_users(team_data.users, robot, robot_id)
+          end
         end
 
         def im_for(user_id)

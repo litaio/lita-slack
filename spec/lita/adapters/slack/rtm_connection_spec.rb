@@ -43,6 +43,7 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
     end
 
     it "creates users with the results of rtm.start data" do
+      allow(Lita::Adapters::Slack::EventLoop).to receive(:defer).and_yield
       expect(Lita::Adapters::Slack::UserCreator).to receive(:create_users)
 
       described_class.build(robot, config)
