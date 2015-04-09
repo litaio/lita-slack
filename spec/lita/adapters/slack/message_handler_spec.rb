@@ -99,6 +99,28 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
         end
       end
 
+      context "when the message has attach" do
+        let(:data) do
+          {
+            "type" => "message",
+            "channel" => "C2147483705",
+            "user" => "U023BECGF",
+            "text" => "Hello",
+            "attachments" => [{"text" => "attached hello"}]
+          }
+        end
+
+        it "recives attachment text" do
+          expect(Lita::Message).to receive(:new).with(
+            robot,
+            "Hello\nattached hello",
+            source
+          ).and_return(message)
+
+          subject.handle
+        end
+      end
+
       context "when the message is nil" do
         let(:data) do
           {
