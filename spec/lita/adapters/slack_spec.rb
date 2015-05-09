@@ -73,6 +73,21 @@ describe Lita::Adapters::Slack, lita: true do
     end
   end
 
+  describe "#set_topic" do
+    let(:api) { instance_double('Lita::Adapters::Slack::API') }
+
+    before do
+      allow(Lita::Adapters::Slack::API).to receive(:new).with(subject.config).and_return(api)
+      allow(api).to receive(:set_topic).and_return(Hash.new)
+    end
+
+    it "sets a new topic for the room" do
+      source = instance_double("Lita::Source", room: 'C1234567890')
+      expect(api).to receive(:set_topic).with('C1234567890', 'Topic')
+      subject.set_topic(source, 'Topic')
+    end
+  end
+
   describe "#shut_down" do
     before { allow(rtm_connection).to receive(:shut_down) }
 
