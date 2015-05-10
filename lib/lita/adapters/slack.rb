@@ -21,6 +21,12 @@ module Lita
         rtm_connection.send_messages(channel_for(target), strings)
       end
 
+      def set_topic(target, topic)
+        channel = target.room
+        Lita.logger.debug("Setting topic for channel #{channel}: #{topic}")
+        API.new(config).set_topic(channel, topic)
+      end
+
       def shut_down
         return unless rtm_connection
 
