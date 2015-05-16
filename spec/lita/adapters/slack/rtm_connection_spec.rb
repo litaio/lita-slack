@@ -41,12 +41,6 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
     it "constructs a new RTMConnection with the results of rtm.start data" do
       expect(described_class.build(robot, config)).to be_an_instance_of(described_class)
     end
-
-    it "creates users with the results of rtm.start data" do
-      expect(Lita::Adapters::Slack::UserCreator).to receive(:create_users)
-
-      described_class.build(robot, config)
-    end
   end
 
   describe "#im_for" do
@@ -87,6 +81,13 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
           expect(websocket).to be_an_instance_of(Faye::WebSocket::Client)
         end
       end
+    end
+
+    it "creates users with the results of rtm.start data" do
+      allow(Lita::Adapters::Slack::EventLoop).to receive(:defer).and_yield
+      expect(Lita::Adapters::Slack::UserCreator).to receive(:create_users)
+
+      subject.run(queue, ping: nil)
     end
 
     it "dispatches incoming data to MessageHandler" do

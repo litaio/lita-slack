@@ -25,8 +25,7 @@ module Lita
           @im_mapping = IMMapping.new(API.new(config), team_data.ims)
           @websocket_url = team_data.websocket_url
           @robot_id = team_data.self.id
-
-          UserCreator.create_users(team_data.users, robot, robot_id)
+          @slack_users = team_data.users
         end
 
         def im_for(user_id)
@@ -49,6 +48,10 @@ module Lita
               shut_down
             end
             websocket.on(:error) { |event| log.debug("WebSocket error: #{event.message}") }
+
+            EventLoop.defer do
+              UserCreator.create_users(slack_users, robot, robot_id)
+            end
 
             queue << websocket if queue
           end
@@ -77,6 +80,7 @@ module Lita
         attr_reader :robot_id
         attr_reader :websocket
         attr_reader :websocket_url
+        attr_reader :slack_users
 
         def log
           Lita.logger
