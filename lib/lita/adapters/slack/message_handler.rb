@@ -36,6 +36,8 @@ module Lita
         def body
           normalized_message = if data["text"]
             data["text"].sub(/^\s*<@#{robot_id}>/, "@#{robot.mention_name}")
+            .gsub(/<http:\/\/([\S]*)\|[\S]*>/, '\1')
+            .gsub(/<(http:\/\/[\S]*)>/, '\1')
           end
 
           attachment_text = Array(data["attachments"]).map do |attachment|
