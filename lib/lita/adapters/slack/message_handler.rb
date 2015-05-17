@@ -36,15 +36,63 @@ module Lita
         def body
           normalized_message = if data["text"]
             data["text"].sub(/^\s*<@#{robot_id}>/, "@#{robot.mention_name}")
-            .gsub(/<http:\/\/([\S]*)\|[\S]*>/, '\1')
-            .gsub(/<(http:\/\/[\S]*)>/, '\1')
           end
+
+         normalized_message = remove_formatting(normalized_message) unless normalized_message.nil?
 
           attachment_text = Array(data["attachments"]).map do |attachment|
             attachment["text"]
           end
 
           ([normalized_message] + attachment_text).compact.join("\n")
+        end
+
+        def remove_formatting(message)
+          # https://api.slack.com/docs/formatting
+          message = message.gsub(/<(?<type>[@#!])?(?<link>[^>|]+)(?:\|(?<label>[^>]+))?>/i) do
+            link  = Regexp.last_match[:link]
+            label = Regexp.last_match[:label]
+
+            case Regexp.last_match[:type]
+              when '@'
+                if label
+                  label
+                else
+                  user = User.find_by_id link
+                  if user
+                    "@#{user.name}"
+                  else
+                    "@#{link}"
+                  end
+                end
+
+              when '#'
+                if label
+                  label
+                else
+                  channel = @channel_mapping.channel_for link
+                  if channel
+                    "\##{channel}"
+                  else
+                    "\##{link}"
+                  end
+                end
+
+              when '!'
+                "@#{link}" if ['channel', 'group', 'everyone'].include? link
+              else
+                link = link.gsub /^mailto:/, ''
+                if label and not link.include? label
+                  "#{label} (#{link})"
+                else
+                  link
+                end
+            end
+          end
+          message.gsub('&lt;', '<')
+                 .gsub('&gt;', '>')
+                 .gsub('&amp;', '&')
+
         end
 
         def channel

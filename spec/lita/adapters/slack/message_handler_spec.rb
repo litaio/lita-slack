@@ -140,6 +140,29 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           subject.handle
         end
       end
+
+
+      context "when the message has some formatting" do
+        let(:data) do
+          {
+              "type"    => "message",
+              "channel" => "C2147483705",
+              "user"    => "U023BECGF",
+              "text"    => "@name #channel http://slack.com slack.com email@slack.com &amp; &lt; &gt;",
+          }
+        end
+
+        it "formats text" do
+          expect(Lita::Message).to receive(:new).with(
+            robot,
+            "@name #channel http://slack.com slack.com email@slack.com & < >",
+            source
+          ).and_return(message)
+
+          subject.handle
+        end
+
+      end
     end
 
     context "with a message with an unsupported subtype" do
