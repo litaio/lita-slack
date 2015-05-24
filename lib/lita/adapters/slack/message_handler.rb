@@ -85,7 +85,7 @@ module Lita
                 if label and not link.include? label
                   "#{label} (#{link})"
                 else
-                  link
+                  label
                 end
             end
           end
