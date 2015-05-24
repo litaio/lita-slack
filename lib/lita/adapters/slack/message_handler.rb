@@ -66,7 +66,7 @@ module Lita
                 if label
                   label
                 else
-                  user = User.find_by_id link
+                  user = User.find_by_id(link)
                   if user
                     "@#{user.name}"
                   else
@@ -78,7 +78,7 @@ module Lita
                 if label
                   label
                 else
-                  channel = @channel_mapping.channel_for link
+                  channel = @channel_mapping.channel_for(link)
                   if channel
                     "\##{channel}"
                   else
@@ -90,7 +90,7 @@ module Lita
                 "@#{link}" if ['channel', 'group', 'everyone'].include? link
               else
                 link = link.gsub /^mailto:/, ''
-                if label and not link.include? label
+                if label && !link.include? label
                   "#{label} (#{link})"
                 else
                   label
