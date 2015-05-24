@@ -49,7 +49,15 @@ module Lita
 
         def remove_formatting(message)
           # https://api.slack.com/docs/formatting
-          message = message.gsub(/<(?<type>[@#!])?(?<link>[^>|]+)(?:\|(?<label>[^>]+))?>/i) do
+          message = message.gsub(/
+              <                    # opening angle bracket
+              (?<type>[@#!])?      # link type
+              (?<link>[^>|]+)      # link
+              (?:\|                # start of |label (optional)
+                  (?<label>[^>]+)  # label
+              )?                   # end of label
+              >                    # closing angle bracket
+              /i) do
             link  = Regexp.last_match[:link]
             label = Regexp.last_match[:label]
 
