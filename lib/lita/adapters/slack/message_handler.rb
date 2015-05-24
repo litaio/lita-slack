@@ -90,7 +90,7 @@ module Lita
                 "@#{link}" if ['channel', 'group', 'everyone'].include? link
               else
                 link = link.gsub /^mailto:/, ''
-                if label && !link.include? label
+                if label && !(link.include? label)
                   "#{label} (#{link})"
                 else
                   label
