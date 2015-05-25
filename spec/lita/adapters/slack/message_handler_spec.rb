@@ -141,27 +141,47 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
         end
       end
 
+      describe "Removing message formatting" do
+        context "does nothing if there are no user links" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo",
+            }
+          end
 
-      context "when the message has some formatting" do
-        let(:data) do
-          {
-              "type"    => "message",
-              "channel" => "C2147483705",
-              "user"    => "U023BECGF",
-              "text"    => "@name #channel http://slack.com slack.com email@slack.com &amp; &lt; &gt;",
-          }
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo",
+                                         source
+                                     ).and_return(message)
+
+            subject.handle
+          end
+
         end
+        context "decodes entities" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo &gt; &amp; &lt; &gt;&amp;&lt;",
+            }
+          end
 
-        it "formats text" do
-          expect(Lita::Message).to receive(:new).with(
-            robot,
-            "@name #channel http://slack.com slack.com email@slack.com & < >",
-            source
-          ).and_return(message)
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo > & < >&<",
+                                         source
+                                     ).and_return(message)
 
-          subject.handle
+            subject.handle
+          end
+
         end
-
       end
     end
 
