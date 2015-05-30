@@ -57,7 +57,7 @@ module Lita
                   (?<label>[^>]+)  # label
               )?                   # end of label
               >                    # closing angle bracket
-              /i) do
+              /ix) do
             link  = Regexp.last_match[:link]
             label = Regexp.last_match[:label]
 
