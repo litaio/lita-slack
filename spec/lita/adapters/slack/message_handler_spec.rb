@@ -142,6 +142,9 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
       end
 
       describe "Removing message formatting" do
+
+        let(:user) { instance_double('Lita::User', id: 'U123',name: 'name', mention_name: 'label') }
+
         context "does nothing if there are no user links" do
           let(:data) do
             {
@@ -181,6 +184,44 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
             subject.handle
           end
 
+        end
+
+        context "changes <@123> links to @name" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <@123> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo @name bar",
+                                         source
+                                     ).and_return(message)
+
+            subject.handle
+          end
+        end
+
+        context "changes <@U123|label> links to label" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <@123|label> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo label bar",
+                                         source
+                                     ).and_return(message)
+
+            subject.handle
+          end
         end
       end
     end
