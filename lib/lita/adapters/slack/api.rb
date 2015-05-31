@@ -3,6 +3,7 @@ require 'faraday'
 require 'lita/adapters/slack/team_data'
 require 'lita/adapters/slack/slack_im'
 require 'lita/adapters/slack/slack_user'
+require 'lita/adapters/slack/slack_channel'
 
 module Lita
   module Adapters
@@ -19,6 +20,17 @@ module Lita
           SlackIM.new(response_data["channel"]["id"], user_id)
         end
 
+        def channel_create(channel_name)
+          response_data = call_api("channels.create", name: channel_name)
+
+          SlackChannel.new(
+              response_data["channel"]["id"],
+              response_data["channel"]["name"],
+              response_data["channel"]["created"],
+              response_data["channel"]["creator"],
+              response_data)
+        end
+
         def set_topic(channel, topic)
           call_api("channels.setTopic", channel: channel, topic: topic)
         end
@@ -30,6 +42,7 @@ module Lita
             SlackIM.from_data_array(response_data["ims"]),
             SlackUser.from_data(response_data["self"]),
             SlackUser.from_data_array(response_data["users"]),
+            SlackChannel.from_data_array(response_data["channels"]),
             response_data["url"]
           )
         end

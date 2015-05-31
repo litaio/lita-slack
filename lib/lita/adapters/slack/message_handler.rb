@@ -2,11 +2,12 @@ module Lita
   module Adapters
     class Slack < Adapter
       class MessageHandler
-        def initialize(robot, robot_id, data)
+        def initialize(robot, robot_id, data, channel_mapping)
           @robot = robot
           @robot_id = robot_id
           @data = data
           @type = data["type"]
+          @channel_mapping = channel_mapping
         end
 
         def handle
@@ -32,6 +33,7 @@ module Lita
         attr_reader :robot
         attr_reader :robot_id
         attr_reader :type
+        attr_reader :channel_mapping
 
         def body
           normalized_message = if data["text"]
