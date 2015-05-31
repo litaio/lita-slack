@@ -1,10 +1,13 @@
 require "spec_helper"
 
 describe Lita::Adapters::Slack::MessageHandler, lita: true do
-  subject { described_class.new(robot, robot_id, data) }
+  subject { described_class.new(robot, robot_id, data, channel_mapping) }
 
   let(:robot) { instance_double('Lita::Robot', name: 'Lita', mention_name: 'lita') }
   let(:robot_id) { 'U12345678' }
+  let(:channel) { Lita::Adapters::Slack::SlackChannel.new('C2147483705', 'general', 1360782804, 'U023BECGF', raw_data) }
+  let(:raw_data) { Hash.new }
+  let(:channel_mapping) { Lita::Adapters::Slack::ChannelMapping.new([channel]) }
 
   describe "#handle" do
     context "with a hello message" do
@@ -223,6 +226,46 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
             subject.handle
           end
         end
+
+        context "changes <#C2147483705> links to #general" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <#C2147483705> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo #general bar",
+                                         source
+                                     ).and_return(message)
+
+            subject.handle
+          end
+        end
+
+        context "changes <#C2147483705|genral> links to #general" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <#C2147483705|general> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo general bar",
+                                         source
+                                     ).and_return(message)
+
+            subject.handle
+          end
+        end
+
+
       end
     end
 
