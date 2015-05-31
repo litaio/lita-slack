@@ -141,7 +141,8 @@ describe Lita::Adapters::Slack::API do
           url: 'wss://example.com/',
           users: [{ id: 'U023BECGF' }],
           ims: [{ id: 'D024BFF1M' }],
-          self: { id: 'U12345678' }
+          self: { id: 'U12345678' },
+          channels: [{ id: 'C1234567890' }]
         })
       end
 
