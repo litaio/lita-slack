@@ -96,6 +96,7 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
 
     it "dispatches incoming data to MessageHandler" do
       allow(Lita::Adapters::Slack::EventLoop).to receive(:defer).and_yield
+      allow(subject).to receive(:channel_mapping).and_return(channel_mapping)
       allow(Lita::Adapters::Slack::MessageHandler).to receive(:new).with(
         robot,
         'U12345678',
