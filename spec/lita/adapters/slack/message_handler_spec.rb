@@ -283,6 +283,24 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           end
         end
 
+        context "changes  <!channel> links to @channel" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <!channel> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo @channel bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
 
       end
     end
