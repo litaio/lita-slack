@@ -373,6 +373,24 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           end
         end
 
+        context "remove formatting around <http> links with a label containing entities" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <http://www.example.com|label &gt; &amp; &lt;> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo label > & < (http://www.example.com) bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
 
       end
     end
