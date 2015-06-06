@@ -355,6 +355,24 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           end
         end
 
+        context "remove formatting around <skype> links" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <skype:echo123?call> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo skype:echo123?call bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
 
       end
     end
