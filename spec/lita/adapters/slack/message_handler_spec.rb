@@ -319,6 +319,42 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           end
         end
 
+        context "removes remove formatting around <http> links" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <http://www.example.com> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo http://www.example.com bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
+        context "removes remove formatting around <http> links with a substring label" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <http://www.example.com|www.example.com> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo www.example.com bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
 
       end
     end
