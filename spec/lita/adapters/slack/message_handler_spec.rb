@@ -391,6 +391,24 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           end
         end
 
+        context "remove formatting around around <mailto> links" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <mailto:name@example.com> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo name@example.com bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
 
       end
     end
