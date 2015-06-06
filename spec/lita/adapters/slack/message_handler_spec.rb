@@ -427,6 +427,24 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           end
         end
 
+        context "change multiple links at once" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <@U123|label> bar <#C2147483705> <!channel> <http://www.example.com|label>",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo label bar #general @channel label (http://www.example.com)",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
 
       end
     end
