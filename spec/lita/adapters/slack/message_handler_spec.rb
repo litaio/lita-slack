@@ -1,10 +1,13 @@
 require "spec_helper"
 
 describe Lita::Adapters::Slack::MessageHandler, lita: true do
-  subject { described_class.new(robot, robot_id, data) }
+  subject { described_class.new(robot, robot_id, data, channel_mapping) }
 
   let(:robot) { instance_double('Lita::Robot', name: 'Lita', mention_name: 'lita') }
   let(:robot_id) { 'U12345678' }
+  let(:channel) { Lita::Adapters::Slack::SlackChannel.new('C2147483705', 'general', 1360782804, 'U023BECGF', raw_data) }
+  let(:raw_data) { Hash.new }
+  let(:channel_mapping) { Lita::Adapters::Slack::ChannelMapping.new([channel]) }
 
   describe "#handle" do
     context "with a hello message" do
@@ -139,6 +142,310 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
 
           subject.handle
         end
+      end
+
+      describe "Removing message formatting" do
+
+        let(:user) { instance_double('Lita::User', id: 'U123',name: 'name', mention_name: 'label') }
+
+        context "does nothing if there are no user links" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo",
+            }
+          end
+
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo",
+                                         source
+                                     ).and_return(message)
+
+            subject.handle
+          end
+
+        end
+        context "decodes entities" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo &gt; &amp; &lt; &gt;&amp;&lt;",
+            }
+          end
+
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo > & < >&<",
+                                         source
+                                     ).and_return(message)
+
+            subject.handle
+          end
+
+        end
+
+        context "changes <@123> links to @name" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <@123> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo @name bar",
+                                         source
+                                     ).and_return(message)
+
+            subject.handle
+          end
+        end
+
+        context "changes <@U123|label> links to label" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <@123|label> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo label bar",
+                                         source
+                                     ).and_return(message)
+
+            subject.handle
+          end
+        end
+
+        context "changes <#C2147483705> links to #general" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <#C2147483705> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo #general bar",
+                                         source
+                                     ).and_return(message)
+
+            subject.handle
+          end
+        end
+
+        context "changes <#C2147483705|genral> links to #general" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <#C2147483705|general> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo general bar",
+                                         source
+                                     ).and_return(message)
+
+            subject.handle
+          end
+        end
+
+        context "changes <!everyone> links to @everyone" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <!everyone> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo @everyone bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
+        context "changes  <!channel> links to @channel" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <!channel> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo @channel bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
+        context "changes <!group> links to @group" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <!group> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo @group bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
+        context "removes remove formatting around <http> links" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <http://www.example.com> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo http://www.example.com bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
+        context "removes remove formatting around <http> links with a substring label" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <http://www.example.com|www.example.com> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo www.example.com bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
+        context "remove formatting around <skype> links" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <skype:echo123?call> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo skype:echo123?call bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
+        context "remove formatting around <http> links with a label containing entities" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <http://www.example.com|label &gt; &amp; &lt;> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo label > & < (http://www.example.com) bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
+        context "remove formatting around around <mailto> links" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <mailto:name@example.com> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo name@example.com bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
+        context "remove formatting around <mailto> links with an email label" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <mailto:name@example.com|name@example.com> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo name@example.com bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
+        context "change multiple links at once" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <@U123|label> bar <#C2147483705> <!channel> <http://www.example.com|label>",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo label bar #general @channel label (http://www.example.com)",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
+
       end
     end
 

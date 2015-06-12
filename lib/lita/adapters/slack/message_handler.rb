@@ -2,11 +2,12 @@ module Lita
   module Adapters
     class Slack < Adapter
       class MessageHandler
-        def initialize(robot, robot_id, data)
+        def initialize(robot, robot_id, data, channel_mapping)
           @robot = robot
           @robot_id = robot_id
           @data = data
           @type = data["type"]
+          @channel_mapping = channel_mapping
         end
 
         def handle
@@ -32,17 +33,76 @@ module Lita
         attr_reader :robot
         attr_reader :robot_id
         attr_reader :type
+        attr_reader :channel_mapping
 
         def body
           normalized_message = if data["text"]
             data["text"].sub(/^\s*<@#{robot_id}>/, "@#{robot.mention_name}")
           end
 
+         normalized_message = remove_formatting(normalized_message) unless normalized_message.nil?
+
           attachment_text = Array(data["attachments"]).map do |attachment|
             attachment["text"]
           end
 
           ([normalized_message] + attachment_text).compact.join("\n")
+        end
+
+        def remove_formatting(message)
+          # https://api.slack.com/docs/formatting
+          message = message.gsub(/
+              <                    # opening angle bracket
+              (?<type>[@#!])?      # link type
+              (?<link>[^>|]+)      # link
+              (?:\|                # start of |label (optional)
+                  (?<label>[^>]+)  # label
+              )?                   # end of label
+              >                    # closing angle bracket
+              /ix) do
+            link  = Regexp.last_match[:link]
+            label = Regexp.last_match[:label]
+
+            case Regexp.last_match[:type]
+              when '@'
+                if label
+                  label
+                else
+                  user = User.find_by_id(link)
+                  if user
+                    "@#{user.name}"
+                  else
+                    "@#{link}"
+                  end
+                end
+
+              when '#'
+                if label
+                  label
+                else
+                  channel = @channel_mapping.channel_for(link)
+                  if channel
+                    "\##{channel}"
+                  else
+                    "\##{link}"
+                  end
+                end
+
+              when '!'
+                "@#{link}" if ['channel', 'group', 'everyone'].include? link
+              else
+                link = link.gsub /^mailto:/, ''
+                if label && !(link.include? label)
+                  "#{label} (#{link})"
+                else
+                  label == nil ? link : label
+                end
+            end
+          end
+          message.gsub('&lt;', '<')
+                 .gsub('&gt;', '>')
+                 .gsub('&amp;', '&')
+
         end
 
         def channel
