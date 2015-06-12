@@ -6,6 +6,7 @@ require 'lita/adapters/slack/event_loop'
 require 'lita/adapters/slack/im_mapping'
 require 'lita/adapters/slack/channel_mapping'
 require 'lita/adapters/slack/message_handler'
+require 'lita/adapters/slack/room_creator'
 require 'lita/adapters/slack/user_creator'
 
 module Lita
@@ -29,6 +30,7 @@ module Lita
           @robot_id = team_data.self.id
 
           UserCreator.create_users(team_data.users, robot, robot_id)
+          RoomCreator.create_rooms(team_data.channels, robot)
         end
 
         def im_for(user_id)

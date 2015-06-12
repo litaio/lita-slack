@@ -52,6 +52,12 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
 
       described_class.build(robot, config)
     end
+
+    it "creates rooms with the results of rtm.start data" do
+      expect(Lita::Adapters::Slack::RoomCreator).to receive(:create_rooms)
+
+      described_class.build(robot, config)
+    end
   end
 
   describe "#im_for" do
