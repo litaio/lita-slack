@@ -1,13 +1,17 @@
 require "spec_helper"
 
 describe Lita::Adapters::Slack::MessageHandler, lita: true do
-  subject { described_class.new(robot, robot_id, data, channel_mapping) }
+  subject { described_class.new(robot, robot_id, data) }
+
+  before do
+    allow(robot).to receive(:trigger)
+    Lita::Adapters::Slack::RoomCreator.create_room(channel, robot)
+  end
 
   let(:robot) { instance_double('Lita::Robot', name: 'Lita', mention_name: 'lita') }
   let(:robot_id) { 'U12345678' }
   let(:channel) { Lita::Adapters::Slack::SlackChannel.new('C2147483705', 'general', 1360782804, 'U023BECGF', raw_data) }
   let(:raw_data) { Hash.new }
-  let(:channel_mapping) { Lita::Adapters::Slack::ChannelMapping.new([channel]) }
 
   describe "#handle" do
     context "with a hello message" do
@@ -529,6 +533,28 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
         end
 
         subject.handle
+      end
+    end
+
+    %w(channel_created channel_rename group_rename).each do |type|
+      context "with a #{type} message" do
+        before { allow(robot).to receive(:trigger) }
+
+        let(:data) do
+          {
+            "type" => type,
+            "channel" => {
+              "id" => "C01234567890",
+              "name" => "mychannel",
+            }
+          }
+        end
+
+        it "creates a new room for the channel" do
+          subject.handle
+
+          expect(Lita::Room.find_by_name("mychannel").id).to eq('C01234567890')
+        end
       end
     end
 

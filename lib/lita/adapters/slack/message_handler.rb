@@ -2,12 +2,11 @@ module Lita
   module Adapters
     class Slack < Adapter
       class MessageHandler
-        def initialize(robot, robot_id, data, channel_mapping)
+        def initialize(robot, robot_id, data)
           @robot = robot
           @robot_id = robot_id
           @data = data
           @type = data["type"]
-          @channel_mapping = channel_mapping
         end
 
         def handle
@@ -20,6 +19,8 @@ module Lita
             handle_user_change
           when "bot_added", "bot_changed"
             handle_bot_change
+          when "channel_created", "channel_rename", "group_rename"
+            handle_channel_change
           when "error"
             handle_error
           else
@@ -33,7 +34,6 @@ module Lita
         attr_reader :robot
         attr_reader :robot_id
         attr_reader :type
-        attr_reader :channel_mapping
 
         def body
           normalized_message = if data["text"]
@@ -80,9 +80,9 @@ module Lita
                 if label
                   label
                 else
-                  channel = @channel_mapping.channel_for(link)
+                  channel = Lita::Room.find_by_id(link)
                   if channel
-                    "\##{channel}"
+                    "\##{channel.name}"
                   else
                     "\##{link}"
                   end
@@ -129,6 +129,11 @@ module Lita
         def handle_bot_change
           log.debug("Updating user data for bot.")
           UserCreator.create_user(SlackUser.from_data(data["bot"]), robot, robot_id)
+        end
+
+        def handle_channel_change
+          log.debug("Updating channel data.")
+          RoomCreator.create_room(SlackChannel.from_data(data["channel"]), robot)
         end
 
         def handle_error

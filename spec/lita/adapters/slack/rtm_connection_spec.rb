@@ -17,7 +17,6 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
   let(:raw_user_data) { Hash.new }
   let(:channel) { Lita::Adapters::Slack::SlackChannel.new('C2147483705', 'general', 1360782804, 'U023BECGF', raw_data) }
   let(:raw_data) { Hash.new }
-  let(:channel_mapping) { Lita::Adapters::Slack::ChannelMapping.new([channel]) }
 
   let(:rtm_start_response) do
     Lita::Adapters::Slack::TeamData.new(
@@ -102,13 +101,10 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
 
     it "dispatches incoming data to MessageHandler" do
       allow(Lita::Adapters::Slack::EventLoop).to receive(:defer).and_yield
-      allow(subject).to receive(:channel_mapping).and_return(channel_mapping)
       allow(Lita::Adapters::Slack::MessageHandler).to receive(:new).with(
         robot,
         'U12345678',
         {},
-        channel_mapping
-
       ).and_return(message_handler)
 
       expect(message_handler).to receive(:handle)
