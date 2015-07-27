@@ -70,7 +70,7 @@ module Lita
                 else
                   user = User.find_by_id(link)
                   if user
-                    "@#{user.name}"
+                    "@#{user.mention_name}"
                   else
                     "@#{link}"
                   end
