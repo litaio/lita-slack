@@ -193,7 +193,7 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
 
         end
 
-        context "changes <@123> links to @name" do
+        context "changes <@123> links to @label" do
           let(:data) do
             {
                 "type"    => "message",
@@ -204,7 +204,7 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           it "removes formatting" do
             expect(Lita::Message).to receive(:new).with(
                                          robot,
-                                         "foo @name bar",
+                                         "foo @label bar",
                                          source
                                      ).and_return(message)
 
