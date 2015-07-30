@@ -21,8 +21,8 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
   let(:rtm_start_response) do
     Lita::Adapters::Slack::TeamData.new(
       [],
-      Lita::Adapters::Slack::SlackUser.new('U12345678', 'carl', nil, raw_user_data),
-      [Lita::Adapters::Slack::SlackUser.new('U12345678', 'carl', '', raw_user_data)],
+      Lita::Adapters::Slack::SlackUser.new('U12345678', 'carl', nil, nil, raw_user_data),
+      [Lita::Adapters::Slack::SlackUser.new('U12345678', 'carl', '', nil, raw_user_data)],
       [channel],
       "wss://example.com/"
     )

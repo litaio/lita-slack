@@ -13,15 +13,17 @@ describe Lita::Adapters::Slack::UserCreator do
 
   describe ".create_users" do
     let(:real_name) { 'Bobby Tables' }
-    let(:bobby) { Lita::Adapters::Slack::SlackUser.new('U023BECGF', 'bobby', real_name, slack_data) }
+    let(:email) { 'bobby.tables@foo.com' }
+    let(:bobby) { Lita::Adapters::Slack::SlackUser.new('U023BECGF', 'bobby', real_name, email, slack_data) }
     let(:robot_id) { 'U12345678' }
-    let(:slack_data) { { 'id' => 'U023BECGF', 'name' => 'bobby', 'real_name' => real_name } }
+    let(:slack_data) { { 'id' => 'U023BECGF', 'name' => 'bobby', 'real_name' => real_name, 'profile' => { 'email' => email } } }
 
     it "creates Lita users for each user in the provided data" do
       expect(Lita::User).to receive(:create).with(
         'U023BECGF',
         name: 'Bobby Tables',
-        mention_name: 'bobby'
+        mention_name: 'bobby',
+        email: email
       )
       expect(robot).to receive(:trigger).with(
         :slack_user_created,
@@ -38,7 +40,8 @@ describe Lita::Adapters::Slack::UserCreator do
         expect(Lita::User).to receive(:create).with(
           'U023BECGF',
           name: 'bobby',
-          mention_name: 'bobby'
+          mention_name: 'bobby',
+          email: email
         )
 
         described_class.create_users([bobby], robot, robot_id)
@@ -49,7 +52,7 @@ describe Lita::Adapters::Slack::UserCreator do
   describe ".create_user" do
     let(:robot_id) { 'U12345678' }
     let(:slack_data) { { 'id' => robot_id, 'name' => 'litabot', 'real_name' => 'Lita Bot' } }
-    let(:slack_user) { Lita::Adapters::Slack::SlackUser.new(robot_id, 'litabot', 'Lita Bot', slack_data) }
+    let(:slack_user) { Lita::Adapters::Slack::SlackUser.new(robot_id, 'litabot', 'Lita Bot', nil, slack_data) }
 
     it "updates the robot's name and mention name if it applicable" do
       expect(robot).to receive(:name=).with('Lita Bot')
