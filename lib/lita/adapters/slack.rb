@@ -15,10 +15,9 @@ module Lita
         rtm_connection.run
       end
 
-      def send_messages(target, strings)
-        return unless rtm_connection
-
-        rtm_connection.send_messages(channel_for(target), strings)
+      def send_messages(target, messages)
+        send_string_messages(target, messages)
+        send_complex_messages(target, messages)
       end
 
       def set_topic(target, topic)
@@ -43,6 +42,20 @@ module Lita
           rtm_connection.im_for(target.user.id)
         else
           target.room
+        end
+      end
+
+      def send_string_messages(target, messages)
+        return unless rtm_connection
+
+        strings = messages.select { |msg| !msg.respond_to?(:to_slack) }
+        rtm_connection.send_messages(channel_for(target), strings)
+      end
+
+      def send_complex_messages(target, messages)
+        messages = messages.select { |msg| msg.respond_to?(:to_slack) }
+        messages.each do |message|
+          API.new(config).post_message(channel_for(target), message.to_slack)
         end
       end
     end
