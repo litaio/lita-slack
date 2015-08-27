@@ -16,8 +16,23 @@ module Lita
       end
 
       def send_messages(target, messages)
-        send_string_messages(target, messages)
-        send_complex_messages(target, messages)
+        # split messages between RTM and API
+        # RTM gets strings that don't match <>
+        # API gets everything else
+
+        string_messages = []
+        complex_messages = []
+
+        messages.each do |m|
+          if m.is_a?(String) && !m.match(/\<.*\>/)
+            string_messages << m
+          else
+            complex_messages << m
+          end
+        end
+
+        send_string_messages(target,string_messages) if string_messages.any?
+        send_complex_messages(target,complex_messages) if complex_messages.any?
       end
 
       def set_topic(target, topic)
@@ -48,14 +63,12 @@ module Lita
       def send_string_messages(target, messages)
         return unless rtm_connection
 
-        strings = messages.select { |msg| !msg.respond_to?(:to_slack) }
-        rtm_connection.send_messages(channel_for(target), strings)
+        rtm_connection.send_messages(channel_for(target), messages)
       end
 
       def send_complex_messages(target, messages)
-        messages = messages.select { |msg| msg.respond_to?(:to_slack) }
         messages.each do |message|
-          API.new(config).post_message(channel_for(target), message.to_slack)
+          API.new(config).post_message(channel_for(target), message)
         end
       end
     end

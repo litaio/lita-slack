@@ -24,16 +24,22 @@ module Lita
           call_api("channels.setTopic", channel: channel, topic: topic)
         end
 
-        def post_message(channel, params)
-          raise "Slack message requires a text param" unless params[:text]
+        def post_message(channel, message)
+          if message.is_a?(String)
+            message = {text:message}
+          else
+            raise "Slack message requires a text param" unless message[:text]
 
-          if params[:attachments]
-            params[:attachments] = JSON.dump(params[:attachments])
+            if params[:attachments]
+              params[:attachments] = JSON.dump(message[:attachments])
+            end
+
           end
+
 
           call_api('chat.postMessage',
                    { as_user: true,
-                     channel: channel }.merge(params))
+                     channel: channel }.merge(message))
         end
 
         def rtm_start
