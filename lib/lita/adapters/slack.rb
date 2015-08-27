@@ -15,10 +15,24 @@ module Lita
         rtm_connection.run
       end
 
-      def send_messages(target, strings)
-        return unless rtm_connection
+      def send_messages(target, messages)
+        # split messages between RTM and API
+        # RTM gets strings that don't match <>
+        # API gets everything else
 
-        rtm_connection.send_messages(channel_for(target), strings)
+        string_messages = []
+        complex_messages = []
+
+        messages.each do |m|
+          if m.is_a?(String) && !m.match(/\<.*\>/)
+            string_messages << m
+          else
+            complex_messages << m
+          end
+        end
+
+        send_string_messages(target,string_messages) if string_messages.any?
+        send_complex_messages(target,complex_messages) if complex_messages.any?
       end
 
       def set_topic(target, topic)
@@ -43,6 +57,18 @@ module Lita
           rtm_connection.im_for(target.user.id)
         else
           target.room
+        end
+      end
+
+      def send_string_messages(target, messages)
+        return unless rtm_connection
+
+        rtm_connection.send_messages(channel_for(target), messages)
+      end
+
+      def send_complex_messages(target, messages)
+        messages.each do |message|
+          API.new(config).post_message(channel_for(target), message)
         end
       end
     end
