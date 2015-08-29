@@ -1,3 +1,4 @@
+require 'lita/adapters/slack/chat_service'
 require 'lita/adapters/slack/rtm_connection'
 
 module Lita
@@ -6,6 +7,11 @@ module Lita
       # Required configuration attributes.
       config :token, type: String, required: true
       config :proxy, type: String
+
+      # Provides an object for Slack-specific features.
+      def chat_service
+        ChatService.new(self)
+      end
 
       # Starts the connection.
       def run

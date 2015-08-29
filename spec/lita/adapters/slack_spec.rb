@@ -21,6 +21,12 @@ describe Lita::Adapters::Slack, lita: true do
     expect(Lita.adapters[:slack]).to eql(described_class)
   end
 
+  describe "#chat_service" do
+    it "returns an object with Slack-specific methods" do
+      expect(subject.chat_service).to be_an_instance_of(described_class::ChatService)
+    end
+  end
+
   describe "#run" do
     it "starts the RTM connection" do
       expect(rtm_connection).to receive(:run)
