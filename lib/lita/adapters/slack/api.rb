@@ -20,6 +20,9 @@ module Lita
           SlackIM.new(response_data["channel"]["id"], user_id)
         end
 
+        def send_attachments(room_or_user, attachments)
+        end
+
         def set_topic(channel, topic)
           call_api("channels.setTopic", channel: channel, topic: topic)
         end
