@@ -66,6 +66,69 @@ describe Lita::Adapters::Slack::API do
     end
   end
 
+  describe "#send_attachments" do
+    let(:attachment) do
+      Lita::Adapters::Slack::Attachment.new(attachment_text)
+    end
+    let(:attachment_text) { "attachment text" }
+    let(:attachment_hash) do
+      {
+        as_user: true,
+        fallback: fallback_text,
+        text: attachment_text,
+      }
+    end
+    let(:fallback_text) { attachment_text }
+    let(:http_response) { MultiJson.dump({ ok: true }) }
+    let(:room) { Lita::Room.new("C1234567890") }
+    let(:stubs) do
+      Faraday::Adapter::Test::Stubs.new do |stub|
+        stub.post(
+          "https://slack.com/api/chat.postMessage",
+          token: token,
+          channel: room.id,
+          attachments: [attachment_hash],
+        ) do
+          [http_status, {}, http_response]
+        end
+      end
+    end
+
+    context "with a simple text attachment" do
+      it "sends the attachment" do
+        response = subject.send_attachments(room, [attachment])
+
+        expect(response['ok']).to be(true)
+      end
+    end
+
+    context "with a Slack error" do
+      let(:http_response) do
+        MultiJson.dump({
+          ok: false,
+          error: 'invalid_auth'
+        })
+      end
+
+      it "raises a RuntimeError" do
+        expect { subject.send_attachments(room, [attachment]) }.to raise_error(
+          "Slack API call to chat.postMessage returned an error: invalid_auth."
+        )
+      end
+    end
+
+    context "with an HTTP error" do
+      let(:http_status) { 422 }
+      let(:http_response) { '' }
+
+      it "raises a RuntimeError" do
+        expect { subject.send_attachments(room, [attachment]) }.to raise_error(
+          "Slack API call to chat.postMessage failed with status code 422."
+        )
+      end
+    end
+  end
+
   describe "#set_topic" do
     let(:channel) { 'C1234567890' }
     let(:topic) { 'Topic' }

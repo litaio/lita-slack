@@ -21,6 +21,11 @@ module Lita
         end
 
         def send_attachments(room_or_user, attachments)
+          call_api(
+            "chat.postMessage",
+            channel: room_or_user.id,
+            attachments: attachments.map(&:to_hash),
+          )
         end
 
         def set_topic(channel, topic)

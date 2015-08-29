@@ -6,6 +6,14 @@ module Lita
           self.text = text
         end
 
+        def to_hash
+          {
+            as_user: true,
+            fallback: text,
+            text: text,
+          }
+        end
+
         private
 
         attr_accessor :text
