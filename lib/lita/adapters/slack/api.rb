@@ -8,6 +8,7 @@ require 'lita/adapters/slack/slack_channel'
 module Lita
   module Adapters
     class Slack < Adapter
+      # @api private
       class API
         def initialize(config, stubs = nil)
           @config = config

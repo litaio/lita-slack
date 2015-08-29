@@ -3,6 +3,8 @@ require 'lita/adapters/slack/rtm_connection'
 
 module Lita
   module Adapters
+    # A Slack adapter for Lita.
+    # @api private
     class Slack < Adapter
       # Required configuration attributes.
       config :token, type: String, required: true
@@ -10,7 +12,7 @@ module Lita
 
       # Provides an object for Slack-specific features.
       def chat_service
-        ChatService.new(self)
+        ChatService.new(config)
       end
 
       # Starts the connection.

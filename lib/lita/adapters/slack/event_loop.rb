@@ -3,6 +3,7 @@ require 'eventmachine'
 module Lita
   module Adapters
     class Slack < Adapter
+      # @api private
       class EventLoop
         class << self
           def defer

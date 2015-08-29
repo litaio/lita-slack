@@ -11,6 +11,7 @@ require 'lita/adapters/slack/user_creator'
 module Lita
   module Adapters
     class Slack < Adapter
+      # @api private
       class RTMConnection
         MAX_MESSAGE_BYTES = 16_000
 

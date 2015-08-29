@@ -1,6 +1,7 @@
 module Lita
   module Adapters
     class Slack < Adapter
+      # @api private
       class SlackIM
         class << self
           def from_data_array(ims_data)

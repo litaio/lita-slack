@@ -1,6 +1,7 @@
 module Lita
   module Adapters
     class Slack < Adapter
+      # @api private
       class IMMapping
         def initialize(api, ims)
           @api = api

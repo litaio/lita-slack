@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Lita::Adapters::Slack::ChatService, lita: true do
-  subject { described_class.new(adapter) }
+  subject { described_class.new(adapter.config) }
 
   let(:adapter) { Lita::Adapters::Slack.new(robot) }
   let(:robot) { Lita::Robot.new(registry) }

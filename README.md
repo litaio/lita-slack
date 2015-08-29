@@ -50,6 +50,14 @@ Lita will join your default channel after initial setup. To have it join additio
 * `:slack_user_created` - When the robot creates/updates a user's info - name, mention name, etc., as directed by Slack. The payload has a single object, a `Lita::Slack::Adapters::SlackUser` object, under the `:slack_user` key.
 * `:slack_channel_created` - When the robot creates/updates a channel's or group's info, as directed by Slack. The payload has a single object, a `Lita::Slack::Adapters::SlackChannel` object, under the `:slack_channel` key.
 
+## Chat service API
+
+lita-slack supports Lita 4.6's chat service API for Slack-specific functionality. You can access this API object by calling the `Lita::Robot#chat_service`. See the API docs for `Lita::Slack::Adapters::ChatService` for details about the provided methods.
+
+## API documentation
+
+The API documentation, useful for plugin authors, can be found for the latest gem release on [RubyDoc.info](http://www.rubydoc.info/gems/lita-slack)
+
 ## License
 
 [MIT](http://opensource.org/licenses/MIT)

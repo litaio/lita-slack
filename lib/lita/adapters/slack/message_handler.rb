@@ -1,6 +1,7 @@
 module Lita
   module Adapters
     class Slack < Adapter
+      # @api private
       class MessageHandler
         def initialize(robot, robot_id, data)
           @robot = robot

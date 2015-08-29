@@ -1,6 +1,7 @@
 module Lita
   module Adapters
     class Slack < Adapter
+      # @api private
       class RoomCreator
         class << self
           def create_room(channel, robot)

@@ -1,6 +1,7 @@
 module Lita
   module Adapters
     class Slack < Adapter
+      # @api private
       class UserCreator
         class << self
           def create_user(slack_user, robot, robot_id)
