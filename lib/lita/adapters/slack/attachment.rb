@@ -2,22 +2,22 @@ module Lita
   module Adapters
     class Slack < Adapter
       class Attachment
-        def initialize(text, fallback: nil)
+        def initialize(text, **options)
           self.text = text
-          self.fallback = fallback
+          self.options = options
         end
 
         def to_hash
-          {
+          options.merge({
             as_user: true,
-            fallback: fallback || text,
+            fallback: options[:fallback] || text,
             text: text,
-          }
+          })
         end
 
         private
 
-        attr_accessor :fallback
+        attr_accessor :options
         attr_accessor :text
       end
     end
