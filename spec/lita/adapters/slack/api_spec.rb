@@ -102,6 +102,19 @@ describe Lita::Adapters::Slack::API do
       end
     end
 
+    context "with a different fallback message" do
+      let(:attachment) do
+        Lita::Adapters::Slack::Attachment.new(attachment_text, fallback: fallback_text)
+      end
+      let(:fallback_text) { "fallback text" }
+
+      it "sends the attachment" do
+        response = subject.send_attachments(room, [attachment])
+
+        expect(response['ok']).to be(true)
+      end
+    end
+
     context "with a Slack error" do
       let(:http_response) do
         MultiJson.dump({
