@@ -9,7 +9,6 @@ module Lita
 
         def to_hash
           options.merge({
-            as_user: true,
             fallback: options[:fallback] || text,
             text: text,
           })

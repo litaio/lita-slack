@@ -73,7 +73,6 @@ describe Lita::Adapters::Slack::API do
     let(:attachment_text) { "attachment text" }
     let(:attachment_hash) do
       {
-        as_user: true,
         fallback: fallback_text,
         text: attachment_text,
       }
@@ -86,8 +85,9 @@ describe Lita::Adapters::Slack::API do
         stub.post(
           "https://slack.com/api/chat.postMessage",
           token: token,
+          as_user: true,
           channel: room.id,
-          attachments: [attachment_hash],
+          attachments: MultiJson.dump([attachment_hash]),
         ) do
           [http_status, {}, http_response]
         end
@@ -120,7 +120,7 @@ describe Lita::Adapters::Slack::API do
         Lita::Adapters::Slack::Attachment.new(attachment_text, common_hash_data)
       end
       let(:attachment_hash) do
-        common_hash_data.merge(as_user: true, text: attachment_text, fallback: attachment_text)
+        common_hash_data.merge(fallback: attachment_text, text: attachment_text)
       end
       let(:common_hash_data) do
         {

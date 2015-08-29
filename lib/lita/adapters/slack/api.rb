@@ -23,8 +23,9 @@ module Lita
         def send_attachments(room_or_user, attachments)
           call_api(
             "chat.postMessage",
+            as_user: true,
             channel: room_or_user.id,
-            attachments: attachments.map(&:to_hash),
+            attachments: MultiJson.dump(attachments.map(&:to_hash)),
           )
         end
 
