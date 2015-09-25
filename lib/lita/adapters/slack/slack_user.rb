@@ -41,9 +41,7 @@ module Lita
         end
 
         # nodoc: backward compatability
-        def raw_data
-          @metadata
-        end
+        alias_method :raw_data, :metadata
       end
     end
   end
