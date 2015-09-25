@@ -5,7 +5,8 @@ describe Lita::Adapters::Slack::SlackUser do
     {
       "id" => "U023BECGF",
       "name" => "bobby",
-      "real_name" => "Bobby Tables"
+      "real_name" => "Bobby Tables",
+      "email" => "btables@example.com"
     }
   end
   let(:user_data_2) do
@@ -27,9 +28,11 @@ describe Lita::Adapters::Slack::SlackUser do
       expect(subject[0].id).to eq('U023BECGF')
       expect(subject[0].name).to eq('bobby')
       expect(subject[0].real_name).to eq('Bobby Tables')
+      expect(subject[0].email).to eq('btables@example.com')
       expect(subject[1].id).to eq('U024BE7LH')
       expect(subject[1].name).to eq('carl')
       expect(subject[1].real_name).to eq('')
+      expect(subject[1].email).to eq('')
     end
   end
 end
