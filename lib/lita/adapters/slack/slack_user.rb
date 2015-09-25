@@ -30,14 +30,19 @@ module Lita
         # @return [String] The user's email address, e.g. alice@example.com
         attr_reader :email
         # @return [Hash] The raw user data received from Slack, including many more fields.
-        attr_reader :raw_data
+        attr_reader :metadata
 
-        def initialize(id, name, real_name, raw_data)
+        def initialize(id, name, real_name, metadata)
           @id = id
           @name = name
           @real_name = real_name.to_s
-          @email = raw_data['email'].to_s
-          @raw_data = raw_data
+          @email = metadata['email'].to_s
+          @metadata = metadata
+        end
+
+        # nodoc: backward compatability
+        def raw_data
+          @metadata
         end
       end
     end

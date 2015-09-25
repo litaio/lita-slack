@@ -34,5 +34,9 @@ describe Lita::Adapters::Slack::SlackUser do
       expect(subject[1].real_name).to eq('')
       expect(subject[1].email).to eq('')
     end
+
+    it "raw_data matches the metadata" do
+      expect(subject[0].metadata['email']).to eq(subject[0].raw_data['email'])
+    end
   end
 end

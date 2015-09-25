@@ -15,8 +15,8 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
   let(:registry) { Lita::Registry.new }
   let(:robot) { Lita::Robot.new(registry) }
   let(:raw_user_data) { Hash.new }
-  let(:channel) { Lita::Adapters::Slack::SlackChannel.new('C2147483705', 'general', 1360782804, 'U023BECGF', raw_data) }
-  let(:raw_data) { Hash.new }
+  let(:channel) { Lita::Adapters::Slack::SlackChannel.new('C2147483705', 'general', 1360782804, 'U023BECGF', metadata) }
+  let(:metadata) { Hash.new }
 
   let(:rtm_start_response) do
     Lita::Adapters::Slack::TeamData.new(
