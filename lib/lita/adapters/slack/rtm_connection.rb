@@ -17,7 +17,8 @@ module Lita
 
         class << self
           def build(robot, config)
-            new(robot, config, API.new(config).rtm_start)
+            team_data = API.new(config).rtm_start
+            new(robot, config, team_data)
           end
         end
 
@@ -28,8 +29,12 @@ module Lita
           @websocket_url = team_data.websocket_url
           @robot_id = team_data.self.id
 
-          UserCreator.create_users(team_data.users, robot, robot_id)
-          RoomCreator.create_rooms(team_data.channels, robot)
+          defer do
+            log.debug("Inserting #{team_data.users.size} users")
+            UserCreator.create_users(team_data.users, robot, robot_id)
+            log.debug("Inserting #{team_data.channels.size} channels")
+            RoomCreator.create_rooms(team_data.channels, robot)
+          end
         end
 
         def im_for(user_id)
@@ -80,6 +85,10 @@ module Lita
         attr_reader :robot_id
         attr_reader :websocket
         attr_reader :websocket_url
+
+        def defer(&block)
+          Thread.new(&block)
+        end
 
         def log
           Lita.logger

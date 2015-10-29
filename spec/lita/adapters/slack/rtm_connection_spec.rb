@@ -48,12 +48,14 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
 
     it "creates users with the results of rtm.start data" do
       expect(Lita::Adapters::Slack::UserCreator).to receive(:create_users)
+      expect_any_instance_of(described_class).to receive(:defer).and_yield
 
       described_class.build(robot, config)
     end
 
     it "creates rooms with the results of rtm.start data" do
       expect(Lita::Adapters::Slack::RoomCreator).to receive(:create_rooms)
+      expect_any_instance_of(described_class).to receive(:defer).and_yield
 
       described_class.build(robot, config)
     end
