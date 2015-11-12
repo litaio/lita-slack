@@ -6,6 +6,7 @@ module Lita
         class << self
           def create_user(slack_user, robot, robot_id)
             profile = slack_user.metadata['profile'] || {}
+            profile = Hash[profile.map { |k, v| [k, v.to_s] }]
             User.create(
               slack_user.id,
               profile.merge(
