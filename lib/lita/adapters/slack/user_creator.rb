@@ -5,13 +5,10 @@ module Lita
       class UserCreator
         class << self
           def create_user(slack_user, robot, robot_id)
-            profile = slack_user.metadata['profile'] || {}
             User.create(
               slack_user.id,
-              profile.merge(
-                name: real_name(slack_user),
-                mention_name: slack_user.name,
-              ),
+              name: real_name(slack_user),
+              mention_name: slack_user.name
             )
 
             update_robot(robot, slack_user) if slack_user.id == robot_id
