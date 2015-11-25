@@ -24,6 +24,8 @@ module Lita
             handle_channel_change
           when "error"
             handle_error
+          when "reaction_added"
+            handle_reaction
           else
             handle_unknown
           end
@@ -37,17 +39,30 @@ module Lita
         attr_reader :type
 
         def body
+          case type
+          when "message"
+            normalized_message
+          when "reaction_added"
+            reaction_type
+          end
+        end
+
+        def normalized_message
           normalized_message = if data["text"]
             data["text"].sub(/^\s*<@#{robot_id}>/, "@#{robot.mention_name}")
           end
 
-         normalized_message = remove_formatting(normalized_message) unless normalized_message.nil?
+          normalized_message = remove_formatting(normalized_message) unless normalized_message.nil?
 
           attachment_text = Array(data["attachments"]).map do |attachment|
             attachment["text"]
           end
 
           ([normalized_message] + attachment_text).compact.join("\n")
+        end
+
+        def reaction_type
+          ':' + data["reaction"] + ':'
         end
 
         def remove_formatting(message)
@@ -152,6 +167,14 @@ module Lita
         def handle_message
           return unless supported_subtype?
 
+          user = User.find_by_id(data["user"]) || User.create(data["user"])
+
+          return if from_self?(user)
+
+          dispatch_message(user)
+        end
+
+        def handle_reaction
           user = User.find_by_id(data["user"]) || User.create(data["user"])
 
           return if from_self?(user)
