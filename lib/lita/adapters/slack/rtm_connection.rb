@@ -58,8 +58,9 @@ module Lita
         end
 
         def send_messages(channel, strings)
+          options = strings.last.is_a?(Hash) ? strings.pop : {}
           strings.each do |string|
-            EventLoop.defer { websocket.send(safe_payload_for(channel, string)) }
+            EventLoop.defer { websocket.send(safe_payload_for(channel, string, options)) }
           end
         end
 
@@ -85,13 +86,15 @@ module Lita
           Lita.logger
         end
 
-        def payload_for(channel, string)
-          MultiJson.dump({
+        def payload_for(channel, string, options)
+          payload = {
             id: 1,
             type: 'message',
             text: string,
             channel: channel
-          })
+          }
+          payload[:parse] = options[:parse] if options[:parse]
+          MultiJson.dump(payload)
         end
 
         def receive_message(event)
@@ -100,8 +103,8 @@ module Lita
           EventLoop.defer { MessageHandler.new(robot, robot_id, data).handle }
         end
 
-        def safe_payload_for(channel, string)
-          payload = payload_for(channel, string)
+        def safe_payload_for(channel, string, options)
+          payload = payload_for(channel, string, options)
 
           if payload.size > MAX_MESSAGE_BYTES
             raise ArgumentError, "Cannot send payload greater than #{MAX_MESSAGE_BYTES} bytes."
