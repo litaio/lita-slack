@@ -15,6 +15,10 @@ module Lita
         ChatService.new(config)
       end
 
+      def mention_format(name)
+        "@#{name}"
+      end
+
       # Starts the connection.
       def run
         return if rtm_connection
