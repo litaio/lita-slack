@@ -54,7 +54,9 @@ module Lita
           # https://api.slack.com/docs/formatting
           message = message.gsub(/
               <                    # opening angle bracket
-              (?<type>[@#!])?      # link type
+              (?<type>[@#!]        # start of type
+                  (?:\w+\^)?       # optional subtype
+              )?                   # end of type
               (?<link>[^>|]+)      # link
               (?:\|                # start of |label (optional)
                   (?<label>[^>]+)  # label
@@ -91,6 +93,9 @@ module Lita
 
               when '!'
                 "@#{link}" if ['channel', 'group', 'everyone'].include? link
+
+              when '!subteam^'
+                label
               else
                 link = link.gsub /^mailto:/, ''
                 if label && !(link.include? label)

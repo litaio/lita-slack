@@ -323,6 +323,24 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           end
         end
 
+        context "changes <!subteam…> links to @group_name" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <!subteam^S0DFLF55X|@group_name> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo @group_name bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
         context "removes remove formatting around <http> links" do
           let(:data) do
             {
