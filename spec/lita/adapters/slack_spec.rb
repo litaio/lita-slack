@@ -27,6 +27,12 @@ describe Lita::Adapters::Slack, lita: true do
     end
   end
 
+  describe "#mention_format" do
+    it "returns the name prefixed with an @" do
+      expect(subject.mention_format("carl")).to eq("@carl")
+    end
+  end
+
   describe "#run" do
     it "starts the RTM connection" do
       expect(rtm_connection).to receive(:run)
