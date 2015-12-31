@@ -44,7 +44,7 @@ module Lita
          normalized_message = remove_formatting(normalized_message) unless normalized_message.nil?
 
           attachment_text = Array(data["attachments"]).map do |attachment|
-            attachment["text"]
+            attachment["text"] || attachment["fallback"]
           end
 
           ([normalized_message] + attachment_text).compact.join("\n")
