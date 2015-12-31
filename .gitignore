@@ -16,3 +16,4 @@ test/tmp
 test/version_tmp
 tmp
 lita_config.rb
+.idea
