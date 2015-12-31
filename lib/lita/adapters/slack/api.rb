@@ -30,6 +30,16 @@ module Lita
           )
         end
 
+        def add_reaction(message, name)
+          call_api(
+              "reactions.add",
+              as_user: true,
+              channel: message.room_object.id,
+              timestamp: message.adapter_data['ts'],
+              name: name,
+          )
+        end
+
         def set_topic(channel, topic)
           call_api("channels.setTopic", channel: channel, topic: topic)
         end
