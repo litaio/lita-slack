@@ -26,7 +26,7 @@ module Lita
 
         # @param message [Lita::Message] A message to add a reaction to
         # @param name [String] Name of the emoji reaction to add
-        # @since 1.7.3
+        # @since 1.8.2
         # @return [void]
         def add_reaction(message, name)
           api.add_reaction(message, name)
