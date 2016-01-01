@@ -35,7 +35,7 @@ module Lita
               "reactions.add",
               as_user: true,
               channel: message.room_object.id,
-              timestamp: message.adapter_data['ts'],
+              timestamp: message.extensions[:slack]['ts'],
               name: name,
           )
         end
