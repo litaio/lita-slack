@@ -31,6 +31,14 @@ module Lita
         def add_reaction(message, name)
           api.add_reaction(message, name)
         end
+
+        # @param message [Lita::Message] A message to remove a reaction from
+        # @param name [String] Name of the emoji reaction to remove
+        # @since 1.8.2
+        # @return [void]
+        def remove_reaction(message, name)
+          api.remove_reaction(message, name)
+        end
       end
     end
   end

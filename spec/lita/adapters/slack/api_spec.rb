@@ -127,6 +127,67 @@ describe Lita::Adapters::Slack::API do
 
   end
 
+  describe "#remove_reaction" do
+    let(:http_response) { MultiJson.dump({ ok: true }) }
+    let(:room) { Lita::Room.new("C1234567890") }
+    let(:registry) { Lita::Registry.new }
+    let(:robot) { Lita::Robot.new(registry) }
+    let(:message) do
+      Lita::Message.new(robot, "Hello!", Lita::Source.new(room: room)).tap do |msg|
+        msg.extensions[:slack] = {'ts' => '123456.7890'}
+      end
+    end
+
+    let(:name) { 'thumbsup' }
+    let(:stubs) do
+      Faraday::Adapter::Test::Stubs.new do |stub|
+        stub.post(
+            "https://slack.com/api/reactions.remove",
+            as_user: true,
+            channel: message.room_object.id,
+            timestamp: message.extensions[:slack]['ts'],
+            name: name,
+            token: token
+        ) do
+          [http_status, {}, http_response]
+        end
+      end
+    end
+
+    it "removes the reaction" do
+      response = subject.remove_reaction(message, name)
+
+      expect(response['ok']).to be(true)
+    end
+
+    context "with a Slack error" do
+      let(:http_response) do
+        MultiJson.dump({
+          ok: false,
+          error: 'invalid_auth'
+        })
+      end
+
+      it "raises a RuntimeError" do
+        expect { subject.remove_reaction(message, name) }.to raise_error(
+          "Slack API call to reactions.remove returned an error: invalid_auth."
+        )
+      end
+    end
+
+    context "with an HTTP error" do
+      let(:http_status) { 422 }
+      let(:http_response) { '' }
+
+      it "raises a RuntimeError" do
+        expect { subject.remove_reaction(message, name) }.to raise_error(
+          "Slack API call to reactions.remove failed with status code 422."
+        )
+      end
+    end
+
+  end
+
   describe "#send_attachments" do
     let(:attachment) do
       Lita::Adapters::Slack::Attachment.new(attachment_text)

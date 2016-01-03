@@ -38,4 +38,15 @@ describe Lita::Adapters::Slack::ChatService, lita: true do
       subject.add_reaction(message, name)
     end
   end
+
+  describe "#remove_reaction" do
+    let(:message) { Lita::Message.new(robot, "Hello", Lita::Source.new(room: room)) }
+    let(:name) { "thumbsup" }
+
+    it "can remove a reaction" do
+      expect(subject.api).to receive(:remove_reaction).with(message, name)
+
+      subject.remove_reaction(message, name)
+    end
+  end
 end

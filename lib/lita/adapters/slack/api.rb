@@ -40,6 +40,16 @@ module Lita
           )
         end
 
+        def remove_reaction(message, name)
+          call_api(
+              "reactions.remove",
+              as_user: true,
+              channel: message.room_object.id,
+              timestamp: message.extensions[:slack]['ts'],
+              name: name,
+          )
+        end
+
         def set_topic(channel, topic)
           call_api("channels.setTopic", channel: channel, topic: topic)
         end
