@@ -32,11 +32,11 @@ module Lita
 
         def add_reaction(message, name)
           call_api(
-              "reactions.add",
-              as_user: true,
-              channel: message.room_object.id,
-              timestamp: message.extensions[:slack]['ts'],
-              name: name,
+            "reactions.add",
+            as_user: true,
+            channel: message.room_object.id,
+            timestamp: message.extensions[:slack]['ts'],
+            name: name,
           )
         end
 
