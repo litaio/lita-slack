@@ -490,36 +490,6 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
       end
     end
 
-    context "with a reaction added" do
-      let(:data) do
-        {
-          "type" => "reaction_added",
-          "channel" => "C2147483705",
-          "user" => "U023BECGF",
-          "reaction" => "smile"
-        }
-      end
-      let(:message) { instance_double('Lita::Message', command!: false) }
-      let(:source) { instance_double('Lita::Source', private_message?: false) }
-      let(:user) { instance_double('Lita::User', id: 'U023BECGF') }
-
-      before do
-        allow(Lita::User).to receive(:find_by_id).and_return(user)
-        allow(Lita::Source).to receive(:new).with(
-            user: user,
-            room: "C2147483705"
-          ).and_return(source)
-        allow(Lita::Message).to receive(:new).with(robot, ":smile:", source).and_return(message)
-        allow(robot).to receive(:receive).with(message)
-      end
-
-      it "dispatches the reaction as message to Lita" do
-        expect(robot).to receive(:receive).with(message)
-
-        subject.handle
-      end
-    end
-
     context "with a team join message" do
       # let(:bobby) { Lita::Adapters::Slack::SlackUser.new('U023BECGF', 'bobby', real_name) }
       let(:data) do
