@@ -30,10 +30,11 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           "type" => "message",
           "channel" => "C2147483705",
           "user" => "U023BECGF",
-          "text" => "Hello"
+          "text" => "Hello",
+          "ts" => "1234.5678"
         }
       end
-      let(:message) { instance_double('Lita::Message', command!: false) }
+      let(:message) { instance_double('Lita::Message', command!: false, extensions: {}) }
       let(:source) { instance_double('Lita::Source', private_message?: false) }
       let(:user) { instance_double('Lita::User', id: 'U023BECGF') }
 
@@ -49,8 +50,12 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
 
       it "dispatches the message to Lita" do
         expect(robot).to receive(:receive).with(message)
-
         subject.handle
+      end
+
+      it "saves the timestamp in extensions" do
+        subject.handle
+        expect(message.extensions["timestamp"]).to eq("1234.5678")
       end
 
       context "when the message is a direct message" do
