@@ -22,7 +22,6 @@ gem "lita-slack"
 ### Optional attributes
 
 * `proxy` (String) – Specify a HTTP proxy URL. (e.g. "http://squid.example.com:3128")
-* `send_via_rtm_api` (Symbol) – Defaults to :yes. Whether or not to use the RTM API for sending messages. RTM API does not support advanced formatting (https://api.slack.com/docs/formatting)
 
 **Note**: When using lita-slack, the adapter will overwrite the bot's name and mention name with the values set on the server, so `config.robot.name` and `config.robot.mention_name` will have no effect.
 

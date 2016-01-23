@@ -56,47 +56,11 @@ describe Lita::Adapters::Slack, lita: true do
       Lita::Source.new(room: 'C024BE91L', user: user, private_message: true)
     end
 
-    describe "via the RTM API" do
-      before do
-        registry.config.adapters.slack.send_via_rtm_api = :yes
-      end
-
-      it "sends messages to rooms" do
-        expect(rtm_connection).to receive(:send_messages).with(room_source.room, ['foo'])
-
-        subject.run
-
-        subject.send_messages(room_source, ['foo'])
-      end
-
-      it "sends messages to users" do
-        allow(rtm_connection).to receive(:im_for).with(user.id).and_return('D024BFF1M')
-
-        expect(rtm_connection).to receive(:send_messages).with('D024BFF1M', ['foo'])
-
-        subject.run
-
-        subject.send_messages(user_source, ['foo'])
-      end
-
-      it "sends messages to users when the source is marked as a private message" do
-        allow(rtm_connection).to receive(:im_for).with(user.id).and_return('D024BFF1M')
-
-        expect(rtm_connection).to receive(:send_messages).with('D024BFF1M', ['foo'])
-
-        subject.run
-
-        subject.send_messages(private_message_source, ['foo'])
-      end
-    end
-
     describe "via the Web API" do
       let(:api) { instance_double('Lita::Adapters::Slack::API') }
 
       before do
         allow(Lita::Adapters::Slack::API).to receive(:new).with(subject.config).and_return(api)
-
-        registry.config.adapters.slack.send_via_rtm_api = :no
       end
 
       it "does not send via the RTM api" do
