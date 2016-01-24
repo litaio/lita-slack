@@ -35,7 +35,8 @@ module Lita
             "chat.postMessage",
             as_user: true,
             channel: channel_id,
-            text: messages.join("\n")
+            text: messages.join("\n"),
+            parse: 'full',
           )
         end
 
