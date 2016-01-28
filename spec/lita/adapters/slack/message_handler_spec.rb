@@ -45,6 +45,7 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           room: "C2147483705"
         ).and_return(source)
         allow(Lita::Message).to receive(:new).with(robot, "Hello", source).and_return(message)
+        allow(message).to receive(:extensions).and_return({})
         allow(robot).to receive(:receive).with(message)
       end
 

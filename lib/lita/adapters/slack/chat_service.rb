@@ -23,6 +23,22 @@ module Lita
           api.send_attachments(target, Array(attachments))
         end
         alias_method :send_attachment, :send_attachments
+
+        # @param message [Lita::Message] A message to add a reaction to
+        # @param name [String] Name of the emoji reaction to add
+        # @since 1.8.2
+        # @return [void]
+        def add_reaction(message, name)
+          api.add_reaction(message, name)
+        end
+
+        # @param message [Lita::Message] A message to remove a reaction from
+        # @param name [String] Name of the emoji reaction to remove
+        # @since 1.8.2
+        # @return [void]
+        def remove_reaction(message, name)
+          api.remove_reaction(message, name)
+        end
       end
     end
   end

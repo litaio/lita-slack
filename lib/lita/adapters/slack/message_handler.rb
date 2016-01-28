@@ -114,6 +114,7 @@ module Lita
           source = Source.new(user: user, room: channel)
           source.private_message! if channel && channel[0] == "D"
           message = Message.new(robot, body, source)
+          message.extensions[:slack] = @data
           message.command! if source.private_message?
           message.extensions[:slack] = { timestamp: data["ts"] }
           log.debug("Dispatching message to Lita from #{user.id}.")
