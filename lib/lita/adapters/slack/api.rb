@@ -36,7 +36,7 @@ module Lita
             as_user: true,
             channel: channel_id,
             text: messages.join("\n"),
-            parse: 'full',
+            parse: config.parse,
           )
         end
 

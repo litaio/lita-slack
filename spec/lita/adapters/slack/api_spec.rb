@@ -191,6 +191,7 @@ describe Lita::Adapters::Slack::API do
           as_user: true,
           channel: room,
           text: messages.join("\n"),
+          parse: nil,
         ) do
           [http_status, {}, http_response]
         end
