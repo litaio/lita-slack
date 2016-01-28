@@ -55,7 +55,7 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
 
       it "saves the timestamp in extensions" do
         subject.handle
-        expect(message.extensions["timestamp"]).to eq("1234.5678")
+        expect(message.extensions["slack"]["timestamp"]).to eq("1234.5678")
       end
 
       context "when the message is a direct message" do
