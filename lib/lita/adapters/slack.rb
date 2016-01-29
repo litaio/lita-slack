@@ -9,6 +9,7 @@ module Lita
       # Required configuration attributes.
       config :token, type: String, required: true
       config :proxy, type: String
+      config :parse, type: String
 
       # Provides an object for Slack-specific features.
       def chat_service
@@ -28,9 +29,8 @@ module Lita
       end
 
       def send_messages(target, strings)
-        return unless rtm_connection
-
-        rtm_connection.send_messages(channel_for(target), strings)
+        api = API.new(config)
+        api.send_messages(channel_for(target), strings)
       end
 
       def set_topic(target, topic)

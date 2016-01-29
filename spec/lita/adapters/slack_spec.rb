@@ -1,5 +1,5 @@
-require "spec_helper"
 
+require "spec_helper"
 describe Lita::Adapters::Slack, lita: true do
   subject { described_class.new(robot) }
 
@@ -56,32 +56,19 @@ describe Lita::Adapters::Slack, lita: true do
       Lita::Source.new(room: 'C024BE91L', user: user, private_message: true)
     end
 
-    it "sends messages to rooms" do
-      expect(rtm_connection).to receive(:send_messages).with(room_source.room, ['foo'])
+    describe "via the Web API" do
+      let(:api) { instance_double('Lita::Adapters::Slack::API') }
 
-      subject.run
+      before do
+        allow(Lita::Adapters::Slack::API).to receive(:new).with(subject.config).and_return(api)
+      end
 
-      subject.send_messages(room_source, ['foo'])
-    end
+      it "does not send via the RTM api" do
+        expect(rtm_connection).to_not receive(:send_messages)
+        expect(api).to receive(:send_messages).with(room_source.room, ['foo'])
 
-    it "sends messages to users" do
-      allow(rtm_connection).to receive(:im_for).with(user.id).and_return('D024BFF1M')
-
-      expect(rtm_connection).to receive(:send_messages).with('D024BFF1M', ['foo'])
-
-      subject.run
-
-      subject.send_messages(user_source, ['foo'])
-    end
-
-    it "sends messages to users when the source is marked as a private message" do
-      allow(rtm_connection).to receive(:im_for).with(user.id).and_return('D024BFF1M')
-
-      expect(rtm_connection).to receive(:send_messages).with('D024BFF1M', ['foo'])
-
-      subject.run
-
-      subject.send_messages(private_message_source, ['foo'])
+        subject.send_messages(room_source, ['foo'])
+      end
     end
   end
 

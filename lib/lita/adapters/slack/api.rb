@@ -30,6 +30,16 @@ module Lita
           )
         end
 
+        def send_messages(channel_id, messages)
+          call_api(
+            "chat.postMessage",
+            as_user: true,
+            channel: channel_id,
+            text: messages.join("\n"),
+            parse: config.parse,
+          )
+        end
+
         def set_topic(channel, topic)
           call_api("channels.setTopic", channel: channel, topic: topic)
         end
