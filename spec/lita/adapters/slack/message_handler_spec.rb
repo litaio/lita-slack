@@ -583,6 +583,78 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
       end
     end
 
+    context "with a reaction_added message" do
+      let(:data) do
+        {
+          "type" => "reaction_added",
+          "user" => "U023BECGF",
+          "item"=>{"type"=>"message", "channel"=>"C2147483705", "ts"=>"1234567.000008"},
+          "reaction"=>"+1",
+          "event_ts"=>"1234.5678"
+        }
+      end
+      let(:reaction) { instance_double('Lita::Adapters::Slack::Reaction', extensions: {}) }
+      let(:source) { instance_double('Lita::Source') }
+      let(:user) { instance_double('Lita::User', id: 'U023BECGF') }
+
+      before do
+        allow(Lita::User).to receive(:find_by_id).and_return(user)
+        allow(Lita::Source).to receive(:new).with(
+            user: user,
+            room: "C2147483705"
+          ).and_return(source)
+        allow(Lita::Adapters::Slack::Reaction).to receive(:new)
+            .with(robot, "+1", {"type"=>"message", "channel"=>"C2147483705", "ts"=>"1234567.000008"}, source, "added").and_return(reaction)
+        allow(robot).to receive(:receive).with(reaction)
+      end
+
+      it "dispatches the added reaction to Lita" do
+        expect(robot).to receive(:receive).with(reaction)
+        subject.handle
+      end
+
+      it "saves the timestamp in extensions" do
+        subject.handle
+        expect(reaction.extensions[:slack][:timestamp]).to eq("1234.5678")
+      end
+    end
+
+    context "with a reaction_removed message" do
+      let(:data) do
+        {
+          "type" => "reaction_removed",
+          "user" => "U023BECGF",
+          "item"=>{"type"=>"message", "channel"=>"C2147483705", "ts"=>"1234567.000008"},
+          "reaction"=>"+1",
+          "event_ts"=>"1234.5678"
+        }
+      end
+      let(:reaction) { instance_double('Lita::Adapters::Slack::Reaction', extensions: {}) }
+      let(:source) { instance_double('Lita::Source') }
+      let(:user) { instance_double('Lita::User', id: 'U023BECGF') }
+
+      before do
+        allow(Lita::User).to receive(:find_by_id).and_return(user)
+        allow(Lita::Source).to receive(:new).with(
+            user: user,
+            room: "C2147483705"
+          ).and_return(source)
+        allow(Lita::Adapters::Slack::Reaction).to receive(:new)
+            .with(robot, "+1", {"type"=>"message", "channel"=>"C2147483705", "ts"=>"1234567.000008"}, source, "removed").and_return(reaction)
+        allow(robot).to receive(:receive).with(reaction)
+      end
+
+      it "dispatches the removed reaction to Lita" do
+        expect(robot).to receive(:receive).with(reaction)
+        subject.handle
+      end
+
+      it "saves the timestamp in extensions" do
+        subject.handle
+        expect(reaction.extensions[:slack][:timestamp]).to eq("1234.5678")
+      end
+    end
+
     context "with an unknown message" do
       let(:data) { { "type" => "???" } }
 
