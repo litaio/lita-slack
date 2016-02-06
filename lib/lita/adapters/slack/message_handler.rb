@@ -1,3 +1,5 @@
+require 'lita/adapters/slack/reaction'
+
 module Lita
   module Adapters
     class Slack < Adapter
@@ -24,6 +26,8 @@ module Lita
             handle_channel_change
           when "error"
             handle_error
+          when "reaction_added", "reaction_removed"
+            handle_reaction
           else
             handle_unknown
           end
@@ -158,6 +162,33 @@ module Lita
           return if from_self?(user)
 
           dispatch_message(user)
+        end
+
+        def handle_reaction
+          log.debug "#{type} event received from Slack"
+
+          # find or create user
+          user = User.find_by_id(data["user"]) || User.create(data["user"])
+
+          # avoid processing reactions added/removed by self
+          return if from_self?(user)
+
+          # create and configure the source
+          item_channel = data['item']['channel']
+          source = Source.new(user: user, room: data['item']['channel'])
+          source.private_message! if item_channel && item_channel[0] == "D"
+
+          # extract attributes from data received
+          name = data["reaction"]
+          item = data["item"]
+          event = data["type"] == "reaction_added" ? "added" : "removed"
+
+          # create and configure a Reaction object
+          reaction = Reaction.new(robot, name, item, source, event)
+          reaction.extensions[:slack] = { timestamp: data["event_ts"] }
+
+          # dispatch reaction
+          robot.receive(reaction)
         end
 
         def handle_unknown
