@@ -175,11 +175,7 @@ module Lita
           payload = { user: user, name: data["reaction"], item: data["item"], event_ts: data["event_ts"] }
 
           # trigger the appropriate slack reaction event
-          if type == "reaction_added"
-            robot.trigger(:slack_reaction_added, payload)
-          elsif type == "reaction_removed"
-            robot.trigger(:slack_reaction_removed, payload)
-          end
+          robot.trigger("slack_#{type}".to_sym, payload)
         end
 
         def handle_unknown
