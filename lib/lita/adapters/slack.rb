@@ -70,6 +70,13 @@ module Lita
         response['channel']['members']
       end
 
+      # Returns the members of a group, but only can do so if it's a member
+      def group_roster(room_id, api)
+        response = api.groups_list
+        group = response['groups'].select { |hash| hash['id'].eql? room_id }.first
+        group.nil? ? [] : group['members']
+      end
+
       # Returns the members of a mpim, but only can do so if it's a member
       def mpim_roster(room_id, api)
         response = api.mpim_list
@@ -89,7 +96,9 @@ module Lita
         when /^C0/
           channel_roster room_id, api
         when /^G0/
-          mpim_roster room_id, api
+          # Groups & MPIMs have the same room ID pattern, check both if needed
+          roster = group_roster room_id, api
+          roster.empty? ? mpim_roster(room_id, api) : roster
         when /^D0/
           im_roster room_id, api
         end

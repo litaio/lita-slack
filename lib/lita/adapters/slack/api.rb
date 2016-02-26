@@ -29,6 +29,10 @@ module Lita
           call_api("channels.list")
         end
 
+        def groups_list
+          call_api("groups.list")
+        end
+
         def mpim_list
           call_api("mpim.list")
         end
