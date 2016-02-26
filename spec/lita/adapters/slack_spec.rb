@@ -72,7 +72,7 @@ describe Lita::Adapters::Slack, lita: true do
       end
     end
 
-    describe "via the Web API, retrieving the roster for a mpim channel" do
+    describe "via the Web API, retrieving the roster for a group/mpim channel" do
       let(:room_source) { Lita::Source.new(room: 'G024BE91L') }
       let(:response) do
         {
@@ -87,7 +87,8 @@ describe Lita::Adapters::Slack, lita: true do
       end
 
       it "returns UID(s)" do
-        expect(subject).to receive(:mpim_roster).with(room_source.room_object.id, api)
+        expect(subject).to receive(:group_roster).with(room_source.room_object.id, api).and_return(%q{})
+        expect(subject).to receive(:mpim_roster).with(room_source.room_object.id, api).and_return(%q{G024BE91L})
 
         subject.roster(room_source.room_object)
       end

@@ -174,6 +174,60 @@ describe Lita::Adapters::Slack::API do
     end
   end
 
+  describe "#groups_list" do
+    let(:channel_id) { 'G024BE91L' }
+    let(:stubs) do
+      Faraday::Adapter::Test::Stubs.new do |stub|
+        stub.post('https://slack.com/api/groups.list', token: token) do
+          [http_status, {}, http_response]
+        end
+      end
+    end
+
+    describe "with a successful response" do
+      let(:http_response) do
+        MultiJson.dump({
+            ok: true,
+            groups: [{
+                id: 'G024BE91L'
+            }]
+        })
+      end
+
+      it "returns a response with groupss Channel ID's" do
+        response = subject.groups_list
+
+        expect(response['groups'].first['id']).to eq(channel_id)
+      end
+    end
+
+    describe "with a Slack error" do
+      let(:http_response) do
+        MultiJson.dump({
+          ok: false,
+          error: 'invalid_auth'
+        })
+      end
+
+      it "raises a RuntimeError" do
+        expect { subject.groups_list }.to raise_error(
+          "Slack API call to groups.list returned an error: invalid_auth."
+        )
+      end
+    end
+
+    describe "with an HTTP error" do
+      let(:http_status) { 422 }
+      let(:http_response) { '' }
+
+      it "raises a RuntimeError" do
+        expect { subject.groups_list }.to raise_error(
+          "Slack API call to groups.list failed with status code 422."
+        )
+      end
+    end
+  end
+
   describe "#mpim_list" do
     let(:channel_id) { 'G024BE91L' }
     let(:stubs) do
