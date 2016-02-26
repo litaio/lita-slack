@@ -1,5 +1,5 @@
-
 require "spec_helper"
+
 describe Lita::Adapters::Slack, lita: true do
   subject { described_class.new(robot) }
 
@@ -45,6 +45,73 @@ describe Lita::Adapters::Slack, lita: true do
 
       subject.run
       subject.run
+    end
+  end
+
+  describe "#roster" do
+    describe "via the Web API, retrieving the roster for a channel" do
+      let(:room_source) { Lita::Source.new(room: 'C024BE91L') }
+      let(:response) do
+        {
+          ok: true,
+          channel: {
+              members: ['C024BE91L']
+          }
+        }
+      end
+      let(:api) { instance_double('Lita::Adapters::Slack::API') }
+
+      before do
+        allow(Lita::Adapters::Slack::API).to receive(:new).with(subject.config).and_return(api)
+      end
+
+      it "returns UID(s)" do
+        expect(subject).to receive(:channel_roster).with(room_source.room_object.id, api)
+
+        subject.roster(room_source.room_object)
+      end
+    end
+
+    describe "via the Web API, retrieving the roster for a mpim channel" do
+      let(:room_source) { Lita::Source.new(room: 'G024BE91L') }
+      let(:response) do
+        {
+          ok: true,
+          groups: [{ id: 'G024BE91L' }]
+        }
+      end
+      let(:api) { instance_double('Lita::Adapters::Slack::API') }
+
+      before do
+        allow(Lita::Adapters::Slack::API).to receive(:new).with(subject.config).and_return(api)
+      end
+
+      it "returns UID(s)" do
+        expect(subject).to receive(:mpim_roster).with(room_source.room_object.id, api)
+
+        subject.roster(room_source.room_object)
+      end
+    end
+
+    describe "via the Web API, retrieving the roster for an im channel" do
+      let(:room_source) { Lita::Source.new(room: 'D024BFF1M') }
+      let(:response) do
+        {
+          ok: true,
+          ims: [{ id: 'D024BFF1M' }]
+        }
+      end
+      let(:api) { instance_double('Lita::Adapters::Slack::API') }
+
+      before do
+        allow(Lita::Adapters::Slack::API).to receive(:new).with(subject.config).and_return(api)
+      end
+
+      it "returns UID" do
+        expect(subject).to receive(:im_roster).with(room_source.room_object.id, api)
+
+        subject.roster(room_source.room_object)
+      end
     end
   end
 
