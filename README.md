@@ -36,7 +36,12 @@ Lita.configure do |config|
   config.robot.adapter = :slack
   config.robot.admins = ["U012A3BCD"]
   config.adapters.slack.token = "abcd-1234567890-hWYd21AmMH2UHAkx29vb5c1Y"
-  config.adapters.slack.parse = "full" # See https://api.slack.com/docs/formatting#parsing_modes
+
+  # Slack parsing mode options, See https://api.slack.com/docs/formatting#parsing_modes
+  # config.adapters.slack.parse = "full"
+  config.adapters.slack.link_names = true
+  config.adapters.slack.unfurl_links = false
+  config.adapters.slack.unfurl_media = false
 end
 ```
 

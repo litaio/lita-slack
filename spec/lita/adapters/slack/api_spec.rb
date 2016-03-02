@@ -191,7 +191,6 @@ describe Lita::Adapters::Slack::API do
           as_user: true,
           channel: room,
           text: messages.join("\n"),
-          parse: nil,
         ) do
           [http_status, {}, http_response]
         end
@@ -200,6 +199,33 @@ describe Lita::Adapters::Slack::API do
 
     context "with a simple text attachment" do
       it "sends the attachment" do
+        response = subject.send_messages(room, messages)
+
+        expect(response['ok']).to be(true)
+      end
+    end
+
+    context "with configuration" do
+      before do
+        allow(config).to receive(:link_names).and_return(true)
+      end
+
+      def stubs(postMessage_options = {})
+        Faraday::Adapter::Test::Stubs.new do |stub|
+          stub.post(
+            "https://slack.com/api/chat.postMessage",
+            token: token,
+            link_names: 1,
+            as_user: true,
+            channel: room,
+            text: messages.join("\n"),
+          ) do
+            [http_status, {}, http_response]
+          end
+        end
+      end
+
+      it "sends the message with configuration" do
         response = subject.send_messages(room, messages)
 
         expect(response['ok']).to be(true)
