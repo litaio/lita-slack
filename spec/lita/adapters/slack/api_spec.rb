@@ -60,7 +60,7 @@ describe Lita::Adapters::Slack::API do
 
       it "raises a RuntimeError" do
         expect { subject.im_open(user_id) }.to raise_error(
-          "Slack API call to im.open failed with status code 422."
+          "Slack API call to im.open failed with status code 422: ''. Headers: {}"
         )
       end
     end
@@ -173,7 +173,7 @@ describe Lita::Adapters::Slack::API do
 
       it "raises a RuntimeError" do
         expect { subject.send_attachments(room, [attachment]) }.to raise_error(
-          "Slack API call to chat.postMessage failed with status code 422."
+          "Slack API call to chat.postMessage failed with status code 422: ''. Headers: {}"
         )
       end
     end
@@ -231,7 +231,7 @@ describe Lita::Adapters::Slack::API do
 
       it "raises a RuntimeError" do
         expect { subject.set_topic(channel, topic) }.to raise_error(
-          "Slack API call to channels.setTopic failed with status code 422."
+          "Slack API call to channels.setTopic failed with status code 422: ''. Headers: {}"
         )
       end
     end
