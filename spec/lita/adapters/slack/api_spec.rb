@@ -579,6 +579,83 @@ describe Lita::Adapters::Slack::API do
     end
   end
 
+  describe "#send_file_content" do
+    let(:channels) { 'C1234567890' }
+    let(:comment) { 'First post!' }
+    let(:content) { 'lorem ipsum' }
+    let(:filename) { 'xyz.txt' }
+    let(:filetype) { 'text' }
+    let(:title) { 'XYZ Text File' }
+    let(:stubs) do
+      Faraday::Adapter::Test::Stubs.new do |stub|
+        stub.post(
+          'https://slack.com/api/files.upload',
+          token: token,
+          content: content,
+          filetype: filetype,
+          filename: filename,
+          title: title,
+          initial_comment: comment,
+          channels: channels
+        ) do
+          [http_status, {}, http_response]
+        end
+      end
+    end
+
+    context "with a successful response" do
+      let(:http_response) do
+        MultiJson.dump({
+          ok: true,
+          file: {
+            id: "F12345678",
+            created: 1456523515,
+            timestamp: 1456523515,
+            name: "xyz.txt",
+            title: "XYZ Text File",
+            mimetype: "text/plain",
+            filetype: "text"
+          }
+        })
+      end
+
+      it "returns a response with the file id" do
+        response = subject.send_file_content(content, filename, filetype, title,
+          comment, channels)
+
+        expect(response['file']['id']).to eq("F12345678")
+      end
+    end
+
+    context "with a Slack error" do
+      let(:http_response) do
+        MultiJson.dump({
+          ok: false,
+          error: 'invalid_auth'
+        })
+      end
+
+      it "raises a RuntimeError" do
+        expect { subject.send_file_content(content, filename, filetype, title,
+          comment, channels) }.to raise_error(
+          "Slack API call to files.upload returned an error: invalid_auth."
+        )
+      end
+    end
+
+    context "with an HTTP error" do
+      let(:http_status) { 422 }
+      let(:http_response) { '' }
+
+      it "raises a RuntimeError" do
+        expect { subject.send_file_content(content, filename, filetype, title,
+          comment, channels) }.to raise_error(
+          "Slack API call to files.upload failed with status code 422: ''. Headers: {}"
+        )
+      end
+    end
+  end
+
   describe "#set_topic" do
     let(:channel) { 'C1234567890' }
     let(:topic) { 'Topic' }
