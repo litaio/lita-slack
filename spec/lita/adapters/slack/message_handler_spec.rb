@@ -583,6 +583,54 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
       end
     end
 
+    context "with a reaction_added message" do
+      let(:data) do
+        {
+          "type" => "reaction_added",
+          "user" => "U023BECGF",
+          "item"=>{"type"=>"message", "channel"=>"C2147483705", "ts"=>"1234567.000008"},
+          "reaction"=>"+1",
+          "event_ts"=>"1234.5678"
+        }
+      end
+      let(:user) { instance_double('Lita::User', id: 'U023BECGF') }
+      let(:payload) { {user: user, name: data["reaction"], item: data["item"], event_ts: data["event_ts"]} }
+
+      before do
+        allow(Lita::User).to receive(:find_by_id).and_return(user)
+        allow(robot).to receive(:trigger).with(:slack_reaction_added, payload)
+      end
+
+      it "triggers the slack_reaction_added event with the correct payload" do
+        expect(robot).to receive(:trigger).with(:slack_reaction_added, payload)
+        subject.handle
+      end
+    end
+
+    context "with a reaction_removed message" do
+      let(:data) do
+        {
+          "type" => "reaction_removed",
+          "user" => "U023BECGF",
+          "item"=>{"type"=>"message", "channel"=>"C2147483705", "ts"=>"1234567.000008"},
+          "reaction"=>"+1",
+          "event_ts"=>"1234.5678"
+        }
+      end
+      let(:user) { instance_double('Lita::User', id: 'U023BECGF') }
+      let(:payload) { {user: user, name: data["reaction"], item: data["item"], event_ts: data["event_ts"]} }
+
+      before do
+        allow(Lita::User).to receive(:find_by_id).and_return(user)
+        allow(robot).to receive(:trigger).with(:slack_reaction_removed, payload)
+      end
+
+      it "triggers the slack_reaction_removed event with the correct payload" do
+        expect(robot).to receive(:trigger).with(:slack_reaction_removed, payload)
+        subject.handle
+      end
+    end
+
     context "with an unknown message" do
       let(:data) { { "type" => "???" } }
 

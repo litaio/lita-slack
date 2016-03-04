@@ -16,6 +16,8 @@ module Lita
             handle_hello
           when "message"
             handle_message
+          when "reaction_added", "reaction_removed"
+            handle_reaction
           when "user_change", "team_join"
             handle_user_change
           when "bot_added", "bot_changed"
@@ -158,6 +160,22 @@ module Lita
           return if from_self?(user)
 
           dispatch_message(user)
+        end
+
+        def handle_reaction
+          log.debug "#{type} event received from Slack"
+
+          # find or create user
+          user = User.find_by_id(data["user"]) || User.create(data["user"])
+
+          # avoid processing reactions added/removed by self
+          return if from_self?(user)
+
+          # build a payload following slack convention for reactions
+          payload = { user: user, name: data["reaction"], item: data["item"], event_ts: data["event_ts"] }
+
+          # trigger the appropriate slack reaction event
+          robot.trigger("slack_#{type}".to_sym, payload)
         end
 
         def handle_unknown
