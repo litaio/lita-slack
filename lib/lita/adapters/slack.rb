@@ -28,6 +28,13 @@ module Lita
         rtm_connection.run
       end
 
+      # Returns UID(s) in an Array or String for:
+      # Channels, MPIMs, IMs
+      def roster(target)
+        api = API.new(config)
+        room_roster target.id, api
+      end
+
       def send_messages(target, strings)
         api = API.new(config)
         api.send_messages(channel_for(target), strings)
@@ -55,6 +62,45 @@ module Lita
           rtm_connection.im_for(target.user.id)
         else
           target.room
+        end
+      end
+
+      def channel_roster(room_id, api)
+        response = api.channels_info room_id
+        response['channel']['members']
+      end
+
+      # Returns the members of a group, but only can do so if it's a member
+      def group_roster(room_id, api)
+        response = api.groups_list
+        group = response['groups'].select { |hash| hash['id'].eql? room_id }.first
+        group.nil? ? [] : group['members']
+      end
+
+      # Returns the members of a mpim, but only can do so if it's a member
+      def mpim_roster(room_id, api)
+        response = api.mpim_list
+        mpim = response['groups'].select { |hash| hash['id'].eql? room_id }.first
+        mpim.nil? ? [] : mpim['members']
+      end
+
+      # Returns the user of an im
+      def im_roster(room_id, api)
+        response = api.mpim_list
+        im = response['ims'].select { |hash| hash['id'].eql? room_id }.first
+        im.nil? ? '' : im['user']
+      end
+
+      def room_roster(room_id, api)
+        case room_id
+        when /^C0/
+          channel_roster room_id, api
+        when /^G0/
+          # Groups & MPIMs have the same room ID pattern, check both if needed
+          roster = group_roster room_id, api
+          roster.empty? ? mpim_roster(room_id, api) : roster
+        when /^D0/
+          im_roster room_id, api
         end
       end
     end
