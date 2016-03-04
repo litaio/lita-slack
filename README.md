@@ -21,7 +21,11 @@ gem "lita-slack"
 
 ### Optional attributes
 
+* `link_names` (Boolean) – Set to `true` to turn all Slack usernames in messages sent by Lita into links.
+* `parse` (String) – Specify the parsing mode. See https://api.slack.com/docs/formatting#parsing_modes.
 * `proxy` (String) – Specify a HTTP proxy URL. (e.g. "http://squid.example.com:3128")
+* `unfurl_links` (Boolean) – Set to `true` to automatically add previews for all links in messages sent by Lita.
+* `unfurl_media` (Boolean) – Set to `false` to prevent automatic previews for media files in messages sent by Lita.
 
 **Note**: When using lita-slack, the adapter will overwrite the bot's name and mention name with the values set on the server, so `config.robot.name` and `config.robot.mention_name` will have no effect.
 
@@ -35,11 +39,11 @@ Each Slack user has a unique ID that never changes even if their real name or us
 Lita.configure do |config|
   config.robot.adapter = :slack
   config.robot.admins = ["U012A3BCD"]
+
   config.adapters.slack.token = "abcd-1234567890-hWYd21AmMH2UHAkx29vb5c1Y"
 
-  # Slack parsing mode options, See https://api.slack.com/docs/formatting#parsing_modes
-  # config.adapters.slack.parse = "full"
   config.adapters.slack.link_names = true
+  config.adapters.slack.parse = "full"
   config.adapters.slack.unfurl_links = false
   config.adapters.slack.unfurl_media = false
 end
