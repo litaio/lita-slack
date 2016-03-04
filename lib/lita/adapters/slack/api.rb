@@ -13,6 +13,11 @@ module Lita
         def initialize(config, stubs = nil)
           @config = config
           @stubs = stubs
+          @post_message_config = {}
+          @post_message_config[:parse] = config.parse unless config.parse.nil?
+          @post_message_config[:link_names] = config.link_names ? 1 : 0 unless config.link_names.nil?
+          @post_message_config[:unfurl_links] = config.unfurl_links unless config.unfurl_links.nil?
+          @post_message_config[:unfurl_media] = config.unfurl_media unless config.unfurl_media.nil?
         end
 
         def im_open(user_id)
@@ -53,10 +58,10 @@ module Lita
         def send_messages(channel_id, messages)
           call_api(
             "chat.postMessage",
+            **post_message_config,
             as_user: true,
             channel: channel_id,
             text: messages.join("\n"),
-            parse: config.parse,
           )
         end
 
@@ -81,6 +86,7 @@ module Lita
 
         attr_reader :stubs
         attr_reader :config
+        attr_reader :post_message_config
 
         def call_api(method, post_data = {})
           response = connection.post(
