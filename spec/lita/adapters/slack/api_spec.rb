@@ -114,7 +114,7 @@ describe Lita::Adapters::Slack::API do
 
       it "raises a RuntimeError" do
         expect { subject.channels_info(channel_id) }.to raise_error(
-          "Slack API call to channels.info failed with status code 422."
+          "Slack API call to channels.info failed with status code 422: ''. Headers: {}"
         )
       end
     end
@@ -168,7 +168,7 @@ describe Lita::Adapters::Slack::API do
 
       it "raises a RuntimeError" do
         expect { subject.channels_list }.to raise_error(
-          "Slack API call to channels.list failed with status code 422."
+          "Slack API call to channels.list failed with status code 422: ''. Headers: {}"
         )
       end
     end
@@ -222,7 +222,7 @@ describe Lita::Adapters::Slack::API do
 
       it "raises a RuntimeError" do
         expect { subject.groups_list }.to raise_error(
-          "Slack API call to groups.list failed with status code 422."
+          "Slack API call to groups.list failed with status code 422: ''. Headers: {}"
         )
       end
     end
@@ -276,7 +276,7 @@ describe Lita::Adapters::Slack::API do
 
       it "raises a RuntimeError" do
         expect { subject.mpim_list }.to raise_error(
-          "Slack API call to mpim.list failed with status code 422."
+          "Slack API call to mpim.list failed with status code 422: ''. Headers: {}"
         )
       end
     end
@@ -330,7 +330,7 @@ describe Lita::Adapters::Slack::API do
 
       it "raises a RuntimeError" do
         expect { subject.im_list }.to raise_error(
-          "Slack API call to im.list failed with status code 422."
+          "Slack API call to im.list failed with status code 422: ''. Headers: {}"
         )
       end
     end
@@ -573,7 +573,7 @@ describe Lita::Adapters::Slack::API do
 
       it "raises a RuntimeError" do
         expect { subject.send_messages(room, messages) }.to raise_error(
-          "Slack API call to chat.postMessage failed with status code 422."
+          "Slack API call to chat.postMessage failed with status code 422: ''. Headers: {}"
         )
       end
     end
