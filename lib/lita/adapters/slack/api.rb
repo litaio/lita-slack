@@ -89,7 +89,7 @@ module Lita
 
         def parse_response(response, method)
           unless response.success?
-            raise "Slack API call to #{method} failed with status code #{response.status}."
+            raise "Slack API call to #{method} failed with status code #{response.status}: '#{response.body}'. Headers: #{response.headers}"
           end
 
           MultiJson.load(response.body)
