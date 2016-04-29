@@ -477,15 +477,8 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
       let(:data) do
         {
           "type" => "message",
-          "subtype" => "bot_message"
+          "user" => robot_id
         }
-      end
-      let(:user) { instance_double('Lita::User', id: 12345) }
-
-      before do
-        # TODO: This probably shouldn't be tested with stubs.
-        allow(Lita::User).to receive(:find_by_id).and_return(user)
-        allow(Lita::User).to receive(:find_by_name).and_return(user)
       end
 
       it "does not dispatch the message to Lita" do

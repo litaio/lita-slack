@@ -123,11 +123,7 @@ module Lita
         end
 
         def from_self?(user)
-          if data["subtype"] == "bot_message"
-            robot_user = User.find_by_name(robot.name)
-
-            robot_user && robot_user.id == user.id
-          end
+          user.id == robot_id
         end
 
         def handle_bot_change
