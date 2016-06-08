@@ -1,5 +1,6 @@
 require 'lita/adapters/slack/chat_service'
 require 'lita/adapters/slack/rtm_connection'
+require 'forwardable'
 
 module Lita
   module Adapters
@@ -7,8 +8,15 @@ module Lita
     # @api private
     class Slack < Adapter
       # Required configuration attributes.
+
+      #
+      # Slack API token.
+      #
+      # @see https://api.slack.com/web#authentication
+      #
       config :token, type: String, required: true
       config :proxy, type: String
+      config :default_message_arguments, type: Hash, default: { as_user: true }
       config :parse, type: [String]
       config :link_names, type: [true, false]
       config :unfurl_links, type: [true, false]
@@ -16,7 +24,7 @@ module Lita
 
       # Provides an object for Slack-specific features.
       def chat_service
-        ChatService.new(config)
+        ChatService.new(config, rtm_connection)
       end
 
       def mention_format(name)
@@ -34,19 +42,16 @@ module Lita
       # Returns UID(s) in an Array or String for:
       # Channels, MPIMs, IMs
       def roster(target)
-        api = API.new(config)
-        room_roster target.id, api
+        room_roster target.id
       end
 
-      def send_messages(target, strings)
-        api = API.new(config)
-        api.send_messages(channel_for(target), strings)
-      end
+      extend Forwardable
+      def_delegators :chat_service, :send_messages
 
       def set_topic(target, topic)
         channel = target.room
         Lita.logger.debug("Setting topic for channel #{channel}: #{topic}")
-        API.new(config).set_topic(channel, topic)
+        api.set_topic(channel, topic)
       end
 
       def shut_down
@@ -58,52 +63,48 @@ module Lita
 
       private
 
-      attr_reader :rtm_connection
-
-      def channel_for(target)
-        if target.private_message?
-          rtm_connection.im_for(target.user.id)
-        else
-          target.room
-        end
+      def api
+        API.new(config)
       end
 
-      def channel_roster(room_id, api)
+      attr_reader :rtm_connection
+
+      def channel_roster(room_id)
         response = api.channels_info room_id
         response['channel']['members']
       end
 
       # Returns the members of a group, but only can do so if it's a member
-      def group_roster(room_id, api)
+      def group_roster(room_id)
         response = api.groups_list
         group = response['groups'].select { |hash| hash['id'].eql? room_id }.first
         group.nil? ? [] : group['members']
       end
 
       # Returns the members of a mpim, but only can do so if it's a member
-      def mpim_roster(room_id, api)
+      def mpim_roster(room_id)
         response = api.mpim_list
         mpim = response['groups'].select { |hash| hash['id'].eql? room_id }.first
         mpim.nil? ? [] : mpim['members']
       end
 
       # Returns the user of an im
-      def im_roster(room_id, api)
+      def im_roster(room_id)
         response = api.mpim_list
         im = response['ims'].select { |hash| hash['id'].eql? room_id }.first
         im.nil? ? '' : im['user']
       end
 
-      def room_roster(room_id, api)
+      def room_roster(room_id)
         case room_id
         when /^C0/
-          channel_roster room_id, api
+          channel_roster room_id
         when /^G0/
           # Groups & MPIMs have the same room ID pattern, check both if needed
-          roster = group_roster room_id, api
-          roster.empty? ? mpim_roster(room_id, api) : roster
+          roster = group_roster room_id
+          roster.empty? ? mpim_roster(room_id) : roster
         when /^D0/
-          im_roster room_id, api
+          im_roster room_id
         end
       end
     end

@@ -13,11 +13,12 @@ module Lita
         def initialize(config, stubs = nil)
           @config = config
           @stubs = stubs
-          @post_message_config = {}
-          @post_message_config[:parse] = config.parse unless config.parse.nil?
-          @post_message_config[:link_names] = config.link_names ? 1 : 0 unless config.link_names.nil?
-          @post_message_config[:unfurl_links] = config.unfurl_links unless config.unfurl_links.nil?
-          @post_message_config[:unfurl_media] = config.unfurl_media unless config.unfurl_media.nil?
+          @default_message_arguments = {}
+          default_message_arguments[:parse] = config.parse unless config.parse.nil?
+          default_message_arguments[:link_names] = config.link_names ? 1 : 0 unless config.link_names.nil?
+          default_message_arguments[:unfurl_links] = config.unfurl_links unless config.unfurl_links.nil?
+          default_message_arguments[:unfurl_media] = config.unfurl_media unless config.unfurl_media.nil?
+          default_message_arguments.merge!(config.default_message_arguments)
         end
 
         def im_open(user_id)
@@ -46,22 +47,22 @@ module Lita
           call_api("im.list")
         end
 
-        def send_attachments(room_or_user, attachments)
-          call_api(
-            "chat.postMessage",
-            as_user: true,
-            channel: room_or_user.id,
-            attachments: MultiJson.dump(attachments.map(&:to_hash)),
-          )
-        end
-
-        def send_messages(channel_id, messages)
-          call_api(
-            "chat.postMessage",
-            **post_message_config,
-            as_user: true,
-            channel: channel_id,
-            text: messages.join("\n"),
+        #
+        # Post a message via the Slack `chat.postMessage` API.
+        #
+        # @param message_arguments Slack `chat.postMessage` arguments. These
+        #   override the defaults in `config.default_message_arguments`. See the
+        #   README for that config variable for details. You must pass channel
+        #   and either text or attachments.
+        #
+        def post_message(**message_arguments)
+          # If passed a Room or User object, grab the id
+          if message_arguments.has_key?(:attachments)
+            message_arguments[:attachments] = MultiJson.dump(message_arguments[:attachments].map(&:to_hash))
+          end
+          call_api("chat.postMessage",
+            **default_message_arguments,
+            **message_arguments
           )
         end
 
@@ -86,7 +87,7 @@ module Lita
 
         attr_reader :stubs
         attr_reader :config
-        attr_reader :post_message_config
+        attr_reader :default_message_arguments
 
         def call_api(method, post_data = {})
           response = connection.post(

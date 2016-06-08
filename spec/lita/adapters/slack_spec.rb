@@ -66,7 +66,7 @@ describe Lita::Adapters::Slack, lita: true do
       end
 
       it "returns UID(s)" do
-        expect(subject).to receive(:channel_roster).with(room_source.room_object.id, api)
+        expect(subject).to receive(:channel_roster).with(room_source.room_object.id)
 
         subject.roster(room_source.room_object)
       end
@@ -87,8 +87,8 @@ describe Lita::Adapters::Slack, lita: true do
       end
 
       it "returns UID(s)" do
-        expect(subject).to receive(:group_roster).with(room_source.room_object.id, api).and_return(%q{})
-        expect(subject).to receive(:mpim_roster).with(room_source.room_object.id, api).and_return(%q{G024BE91L})
+        expect(subject).to receive(:group_roster).with(room_source.room_object.id).and_return(%q{})
+        expect(subject).to receive(:mpim_roster).with(room_source.room_object.id).and_return(%q{G024BE91L})
 
         subject.roster(room_source.room_object)
       end
@@ -109,7 +109,7 @@ describe Lita::Adapters::Slack, lita: true do
       end
 
       it "returns UID" do
-        expect(subject).to receive(:im_roster).with(room_source.room_object.id, api)
+        expect(subject).to receive(:im_roster).with(room_source.room_object.id)
 
         subject.roster(room_source.room_object)
       end
@@ -133,7 +133,7 @@ describe Lita::Adapters::Slack, lita: true do
 
       it "does not send via the RTM api" do
         expect(rtm_connection).to_not receive(:send_messages)
-        expect(api).to receive(:send_messages).with(room_source.room, ['foo'])
+        expect(api).to receive(:post_message).with(channel: room_source.room, text: 'foo')
 
         subject.send_messages(room_source, ['foo'])
       end
