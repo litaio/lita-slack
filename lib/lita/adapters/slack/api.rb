@@ -50,20 +50,30 @@ module Lita
         #
         # Post a message via the Slack `chat.postMessage` API.
         #
-        # @param message_arguments Slack `chat.postMessage` arguments. These
+        # @param arguments Slack `chat.postMessage` arguments. These
         #   override the defaults in `config.default_message_arguments`. See the
         #   README for that config variable for details. You must pass channel
         #   and either text or attachments.
         #
-        def post_message(**message_arguments)
-          # If passed a Room or User object, grab the id
-          if message_arguments.has_key?(:attachments)
-            message_arguments[:attachments] = MultiJson.dump(message_arguments[:attachments].map(&:to_hash))
+        def post_message(**arguments)
+          call_api("chat.postMessage", **default_message_arguments.merge(arguments))
+        end
+
+        def me_message(**arguments)
+          call_api("chat.meMessage", **arguments)
+        end
+
+        def chat_update(**arguments)
+          call_api("chat.update", **default_message_arguments.merge(arguments))
+        end
+
+        def chat_delete(**arguments)
+          # Copy only as_user from default_message_arguments
+          if default_message_arguments.has_key?(:as_user) && !arguments.has_key?(:as_user)
+            arguments[:as_user] = default_message_arguments[:as_user]
           end
-          call_api("chat.postMessage",
-            **default_message_arguments,
-            **message_arguments
-          )
+
+          call_api("chat.delete", **arguments)
         end
 
         def set_topic(channel, topic)
@@ -89,10 +99,21 @@ module Lita
         attr_reader :config
         attr_reader :default_message_arguments
 
-        def call_api(method, post_data = {})
+        def call_api(method, **arguments)
+          # Array and Hash arguments must be JSON-encoded
+          arguments.each do |key, value|
+            case value
+            when Array, Hash
+              arguments[key] = MultiJson.dump(value)
+            when Attachment
+              arguments[key] = MultiJson.dump(value.to_hash)
+            end
+          end
+
           response = connection.post(
             "https://slack.com/api/#{method}",
-            { token: config.token }.merge(post_data)
+            token: config.token,
+            **arguments
           )
 
           data = parse_response(response, method)

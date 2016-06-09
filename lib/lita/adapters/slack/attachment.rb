@@ -25,6 +25,9 @@ module Lita
             text: text,
           })
         end
+        def to_json(**options)
+          MultiJson.dump(to_hash, **options)
+        end
 
         private
 

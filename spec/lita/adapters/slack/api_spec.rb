@@ -2,6 +2,9 @@ require "spec_helper"
 
 describe Lita::Adapters::Slack::API do
   subject { described_class.new(config, stubs) }
+  let(:api) { subject }
+  # Stubs are empty by default. Override or call expect_post to add stubs.
+  let(:stubs) { Faraday::Adapter::Test::Stubs.new }
 
   let(:http_status) { 200 }
   let(:token) { 'abcd-1234567890-hWYd21AmMH2UHAkx29vb5c1Y' }
@@ -9,6 +12,36 @@ describe Lita::Adapters::Slack::API do
 
   before do
     config.token = token
+  end
+
+  #
+  # Add an expected Slack API POST request/response.
+  #
+  # @param method [String] Slack API method (e.g. chat.postMessage)
+  # @param raw_response [Integer, Hash, String] Raw response (overrides
+  #   everything else, use to return errors and invalid bodies).
+  # @param response [Hash] The response to send. Will be JSON-encoded before
+  #   sending. Defaults to `{ ok: true }`.
+  # @param token [String] The token to send. Defaults to the test instance's
+  #   `let(:token)` variable.
+  # @param arguments [Hash] The arguments to send. Array or Hash values will be
+  #   JSON-encoded.
+  #
+  def expect_post(method, raw_response: nil, response: { ok: true }, token: self.token, **arguments)
+    # Hash and Array arguments are JSON-encoded
+    arguments = arguments.dup
+    arguments.each do |key, value|
+      case arguments[key]
+      when Array, Hash
+        arguments[key] = MultiJson.dump(value)
+      end
+    end
+    unique_object = Object.new
+
+    # Expect the post
+    stubs.post("http://slack.com/api/#{method}", token: token, **arguments) do
+      raw_response || [200, {}, MultiJson.dump(response)]
+    end
   end
 
   describe "#im_open" do
@@ -170,6 +203,123 @@ describe Lita::Adapters::Slack::API do
         expect { subject.channels_list }.to raise_error(
           "Slack API call to channels.list failed with status code 422: ''. Headers: {}"
         )
+      end
+    end
+  end
+
+  describe "#chat_update" do
+    # Default values; we don't care what they are, just that they are there
+    let(:channel) { "test" }
+    let(:ts) { "1234.5678" }
+    let(:text) { "hi there" }
+
+    it "sends simple text updates" do
+      expect_post("chat.update", channel: channel, ts: ts, text: text, as_user: true)
+      expect(
+        api.chat_update(channel: channel, ts: ts, text: text)
+      ).to eq("ok" => true)
+    end
+
+    it "overrides default as_user when passed" do
+      expect_post("chat.update", channel: channel, ts: ts, text: text, as_user: false)
+      expect(
+        api.chat_update(channel: channel, ts: ts, text: text, as_user: false)
+      ).to eq("ok" => true)
+    end
+
+    it "sends attachments and options" do
+      expect_post("chat.update", channel: channel, ts: ts, attachments: [{text: text}], parse: "none", as_user: true)
+      expect(
+        api.chat_update(channel: channel, ts: ts, attachments: [{text: text}], parse: "none")
+      ).to eq("ok" => true)
+    end
+
+    it "returns whatever it gets back" do
+      expect_post("chat.update", channel: channel, ts: ts, attachments: [{text: text}], as_user: true,
+        response: { "ok" => true, "channel" => "test", "attachments" => [ { "text" => "hi there" } ] }
+      )
+      expect(
+        api.chat_update(channel: channel, ts: ts, attachments: [{text: text}])
+      ).to eq("ok" => true, "channel" => "test", "attachments" => [ { "text" => "hi there" } ])
+    end
+
+    context "when it gets a Slack error" do
+      before do
+        expect_post("chat.update", channel: channel, ts: ts, attachments: [{text: text}], as_user: true,
+          response: { "ok" => false, error: "invalid_auth" }
+        )
+      end
+
+      it "raises a RuntimeError" do
+        expect {
+          api.chat_update(channel: channel, ts: ts, attachments: [{text: text}])
+        }.to raise_error("Slack API call to chat.update returned an error: invalid_auth.")
+      end
+    end
+
+    context "when it gets an HTTP error" do
+      before do
+        expect_post("chat.update", channel: channel, ts: ts, attachments: [{text: text}], as_user: true,
+          raw_response: [ 422, {}, "" ]
+        )
+      end
+
+      it "raises a RuntimeError" do
+        expect {
+          api.chat_update(channel: channel, ts: ts, attachments: [{text: text}])
+        }.to raise_error("Slack API call to chat.update failed with status code 422: ''. Headers: {}")
+      end
+    end
+  end
+
+  describe "#chat_delete" do
+    let(:channel) { "test" }
+    let(:ts) { "1234.5678" }
+
+    it "sends the delete" do
+      expect_post("chat.delete", channel: channel, ts: ts, as_user: true)
+      expect(api.chat_delete(channel: channel, ts: ts)).to eq("ok" => true)
+    end
+
+    it "can override as_user" do
+      expect_post("chat.delete", channel: channel, ts: ts, as_user: false)
+      expect(api.chat_delete(channel: channel, ts: ts, as_user: false)).to eq("ok" => true)
+    end
+
+    it "returns whatever it gets back" do
+      expect_post("chat.delete", channel: channel, ts: ts, as_user: true,
+        response: { "ok" => true, "channel" => "test", "ts" => "1234.5678" }
+      )
+      expect(api.chat_delete(channel: channel, ts: ts)).to eq(
+        "ok" => true, "channel" => "test", "ts" => "1234.5678"
+      )
+    end
+
+    context "when it gets a Slack error" do
+      before do
+        expect_post("chat.delete", channel: channel, ts: ts, as_user: true,
+          response: { "ok" => false, error: "invalid_auth" }
+        )
+      end
+
+      it "raises a RuntimeError" do
+        expect {
+          api.chat_delete(channel: channel, ts: ts)
+        }.to raise_error("Slack API call to chat.delete returned an error: invalid_auth.")
+      end
+    end
+
+    context "when it gets an HTTP error" do
+      before do
+        expect_post("chat.delete", channel: channel, ts: ts, as_user: true,
+          raw_response: [ 422, {}, "" ]
+        )
+      end
+
+      it "raises a RuntimeError" do
+        expect {
+          api.chat_delete(channel: channel, ts: ts)
+        }.to raise_error("Slack API call to chat.delete failed with status code 422: ''. Headers: {}")
       end
     end
   end
