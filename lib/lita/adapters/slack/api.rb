@@ -13,12 +13,6 @@ module Lita
         def initialize(config, stubs = nil)
           @config = config
           @stubs = stubs
-          @default_message_arguments = {}
-          default_message_arguments[:parse] = config.parse unless config.parse.nil?
-          default_message_arguments[:link_names] = config.link_names ? 1 : 0 unless config.link_names.nil?
-          default_message_arguments[:unfurl_links] = config.unfurl_links unless config.unfurl_links.nil?
-          default_message_arguments[:unfurl_media] = config.unfurl_media unless config.unfurl_media.nil?
-          default_message_arguments.merge!(config.default_message_arguments)
         end
 
         def im_open(user_id)
@@ -47,35 +41,6 @@ module Lita
           call_api("im.list")
         end
 
-        #
-        # Post a message via the Slack `chat.postMessage` API.
-        #
-        # @param arguments Slack `chat.postMessage` arguments. These
-        #   override the defaults in `config.default_message_arguments`. See the
-        #   README for that config variable for details. You must pass channel
-        #   and either text or attachments.
-        #
-        def post_message(**arguments)
-          call_api("chat.postMessage", **default_message_arguments.merge(arguments))
-        end
-
-        def me_message(**arguments)
-          call_api("chat.meMessage", **arguments)
-        end
-
-        def chat_update(**arguments)
-          call_api("chat.update", **default_message_arguments.merge(arguments))
-        end
-
-        def chat_delete(**arguments)
-          # Copy only as_user from default_message_arguments
-          if default_message_arguments.has_key?(:as_user) && !arguments.has_key?(:as_user)
-            arguments[:as_user] = default_message_arguments[:as_user]
-          end
-
-          call_api("chat.delete", **arguments)
-        end
-
         def set_topic(channel, topic)
           call_api("channels.setTopic", channel: channel, topic: topic)
         end
@@ -93,20 +58,30 @@ module Lita
           )
         end
 
-        private
-
-        attr_reader :stubs
-        attr_reader :config
-        attr_reader :default_message_arguments
-
+        #
+        # Call the Slack API method with the given arguments
+        #
+        # @param method [String] The Slack API method. e.g. `"chat.postMessage"`.
+        #   The full URL posted to will be https://slack.com/api/chat.postMessage.
+        # @param arguments [Hash] A Hash of arguments to pass to the Slack API.
+        #   Array, Hash and Attachment values will be converted to JSON. `token`
+        #   will be passed automatically.
+        #
+        # @return [Hash] The parsed response, typically `{ "ok" => true, ... }`
+        # @raise [RuntimeError] If the server returns a non-200 or returns
+        #   `{ "ok" => "false" }`.
+        #
         def call_api(method, **arguments)
-          # Array and Hash arguments must be JSON-encoded
+          # Array and Hash arguments must be JSON-encoded; `nil` arguments will
+          # not be passed.
           arguments.each do |key, value|
             case value
             when Array, Hash
               arguments[key] = MultiJson.dump(value)
             when Attachment
               arguments[key] = MultiJson.dump(value.to_hash)
+            when nil
+              arguments.delete(key)
             end
           end
 
@@ -122,6 +97,35 @@ module Lita
 
           data
         end
+
+        #
+        # Get the Slack channel ID for the given Lita target.
+        #
+        # @param target [Lita::Source, Lita::Room, Lita::User, String] The channel or room
+        #   or source you want the channel for.
+        # @return [String] The Slack channel or private message ID.
+        #
+        def channel_for(target)
+          case target
+          when Lita::Source
+            if target.private_message?
+              rtm_connection.im_for(target.user.id)
+            else
+              target.room
+            end
+
+          when Lita::Room, Lita::User
+            target.id
+
+          else
+            target
+          end
+        end
+
+        private
+
+        attr_reader :stubs
+        attr_reader :config
 
         def connection
           if stubs

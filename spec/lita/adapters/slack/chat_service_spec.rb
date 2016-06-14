@@ -1,4 +1,5 @@
 require "spec_helper"
+require "support/expect_api_call"
 
 describe Lita::Adapters::Slack::ChatService, lita: true do
   subject { described_class.new(adapter.config) }
@@ -15,104 +16,133 @@ describe Lita::Adapters::Slack::ChatService, lita: true do
     registry.register_adapter(:slack, Lita::Adapters::Slack)
   end
 
-  describe "#send_messages" do
-    let(:attachment) { Lita::Adapters::Slack::Attachment.new("attachment text") }
+  include ExpectApiCall
 
+  describe "#post_message" do
     it "can send a simple message to a room source" do
-      expect(subject.api).to receive(:post_message).with(channel: channel, text: "hi there")
-      subject.send_messages(room_source, "hi there")
+      expect_api_call("chat.postMessage", channel: channel, text: "hi there")
+      subject.post_message(room_source, text: "hi there")
     end
 
     it "can send a simple message to a room" do
-      expect(subject.api).to receive(:post_message).with(channel: channel, text: "hi there")
-      subject.send_messages(room, "hi there")
+      expect_api_call("chat.postMessage", channel: channel, text: "hi there")
+      subject.post_message(room, text: "hi there")
     end
 
     it "can send a simple message to a user" do
-      expect(subject.api).to receive(:post_message).with(channel: username, text: "hi there")
-      subject.send_messages(user, "hi there")
+      expect_api_call("chat.postMessage", channel: username, text: "hi there")
+      subject.post_message(user, text: "hi there")
     end
 
     it "can send a simple message to a channel" do
-      expect(subject.api).to receive(:post_message).with(channel: channel, text: "hi there")
-      subject.send_messages(channel, "hi there")
+      expect_api_call("chat.postMessage", channel: channel, text: "hi there")
+      subject.post_message(channel, text: "hi there")
     end
 
     it "returns the JSON from post_message" do
-      expect(subject.api).to receive(:post_message).with(channel: channel, text: "hi there").and_return("ok" => true)
-      expect(subject.send_messages(room_source, "hi there")).to eq("ok" => true)
-    end
-
-    it "can send multiple messages" do
-      expect(subject.api).to receive(:post_message).with(channel: channel, text: "a\nb")
-
-      subject.send_messages(room_source, [ "a", "b" ])
+      expect_api_call("chat.postMessage", channel: channel, text: "hi there")
+      expect(subject.post_message(room_source, text: "hi there")).to eq("ok" => true)
     end
 
     it "can send attachments without text" do
-      expect(subject.api).to receive(:post_message).with(channel: channel, attachments: [ attachment ])
-
-      subject.send_messages(room_source, attachments: [ attachment ])
+      expect_api_call("chat.postMessage", channel: channel, attachments: %|[{"fallback":"attachment text","text":"attachment text"}]|)
+      attachment = Lita::Adapters::Slack::Attachment.new("attachment text")
+      subject.post_message(room_source, attachments: [ attachment ])
     end
 
     it "can send attachments, text and message arguments" do
-      expect(subject.api).to receive(:post_message).with(channel: channel, text: "a\nb", attachments: [ attachment ], parse: "none")
-
-      subject.send_messages(room_source, [ "a", "b" ], attachments: [ attachment ], parse: "none")
+      expect_api_call("chat.postMessage", channel: channel, text: "a\nb", attachments: %|[{"fallback":"attachment text","text":"attachment text"}]|, parse: "none")
+      attachment = Lita::Adapters::Slack::Attachment.new("attachment text")
+      subject.post_message(room_source, text: "a\nb", attachments: [ attachment ], parse: "none")
     end
 
-    it "is aliased as send_message" do
-      expect(subject.api).to receive(:post_message).with(channel: channel, text: "hi there")
-
-      subject.send_message(room_source, "hi there")
+    it "can send all arguments" do
+      expect_api_call("chat.postMessage",
+        channel: channel,
+        text: "a",
+        attachments: %|[{"fallback":"attachment text","text":"attachment text"}]|,
+        parse: "none",
+        link_names: "1",
+        unfurl_links: true,
+        unfurl_media: true,
+        mrkdwn: "0",
+        as_user: false,
+        username: "bot",
+        icon_emoji: ":lol:",
+        icon_url: "http://kittens.com/cute.jpeg"
+      )
+      attachment = Lita::Adapters::Slack::Attachment.new("attachment text")
+      subject.post_message(
+        channel,
+        text: "a",
+        attachments: [ attachment ],
+        parse: "none",
+        link_names: "1",
+        unfurl_links: true,
+        unfurl_media: true,
+        mrkdwn: "0",
+        as_user: false,
+        username: "bot",
+        icon_emoji: ":lol:",
+        icon_url: "http://kittens.com/cute.jpeg"
+      )
     end
   end
 
   describe "#update_message" do
-    let(:attachment) { Lita::Adapters::Slack::Attachment.new("attachment text") }
     let(:ts) { "1234.5678" }
 
     it "can send a simple message to a room source" do
-      expect(subject.api).to receive(:chat_update).with(channel: channel, ts: ts, text: "hi there")
-      subject.update_message(room_source, ts, "hi there")
+      expect_api_call("chat.update", channel: channel, ts: ts, text: "hi there")
+      subject.update_message(room_source, ts, text: "hi there")
     end
 
     it "can send a simple message to a room" do
-      expect(subject.api).to receive(:chat_update).with(channel: channel, ts: ts, text: "hi there")
-      subject.update_message(room, ts, "hi there")
+      expect_api_call("chat.update", channel: channel, ts: ts, text: "hi there")
+      subject.update_message(room, ts, text: "hi there")
     end
 
     it "can send a simple message to a user" do
-      expect(subject.api).to receive(:chat_update).with(channel: username, ts: ts, text: "hi there")
-      subject.update_message(user, ts, "hi there")
+      expect_api_call("chat.update", channel: username, ts: ts, text: "hi there")
+      subject.update_message(user, ts, text: "hi there")
     end
 
     it "can send a simple message to a channel" do
-      expect(subject.api).to receive(:chat_update).with(channel: channel, ts: ts, text: "hi there")
-      subject.update_message(channel, ts, "hi there")
+      expect_api_call("chat.update", channel: channel, ts: ts, text: "hi there")
+      subject.update_message(channel, ts, text: "hi there")
     end
 
     it "returns the JSON from update_message" do
-      expect(subject.api).to receive(:chat_update).with(channel: channel, ts: ts, text: "hi there").and_return("ok" => true)
-      expect(subject.update_message(room_source, ts, "hi there")).to eq("ok" => true)
-    end
-
-    it "can update with multiple messages" do
-      expect(subject.api).to receive(:chat_update).with(channel: channel, ts: ts, text: "a\nb")
-
-      subject.update_message(room_source, ts, [ "a", "b" ])
+      expect_api_call("chat.update", channel: channel, ts: ts, text: "hi there")
+      expect(subject.update_message(room_source, ts, text: "hi there")).to eq("ok" => true)
     end
 
     it "can send attachments without text" do
-      expect(subject.api).to receive(:chat_update).with(channel: channel, ts: ts, attachments: [ attachment ])
-
+      expect_api_call("chat.update", channel: channel, ts: ts, attachments: %|[{"fallback":"attachment text","text":"attachment text"}]|)
+      attachment = Lita::Adapters::Slack::Attachment.new("attachment text")
       subject.update_message(room_source, ts, attachments: [ attachment ])
     end
 
     it "can send attachments, text and message arguments" do
-      expect(subject.api).to receive(:chat_update).with(channel: channel, ts: ts, text: "a\nb", attachments: [ attachment ], parse: "none")
+      expect_api_call("chat.update", channel: channel, ts: ts, text: "a\nb", attachments: %|[{"fallback":"attachment text","text":"attachment text"}]|, parse: "none")
+      attachment = Lita::Adapters::Slack::Attachment.new("attachment text")
+      subject.update_message(room_source, ts, text: "a\nb", attachments: [ attachment ], parse: "none")
+    end
 
-      subject.update_message(room_source, ts, [ "a", "b" ], attachments: [ attachment ], parse: "none")
+    it "can send all arguments" do
+      expect_api_call("chat.update",
+        channel: channel,
+        ts: ts,
+        text: "a\nb",
+        attachments: %|[{"fallback":"attachment text","text":"attachment text"}]|,
+        parse: "none",
+        link_names: "1")
+      attachment = Lita::Adapters::Slack::Attachment.new("attachment text")
+      subject.update_message(room_source, ts,
+        text: "a\nb",
+        attachments: [ attachment ],
+        parse: "none",
+        link_names: "1")
     end
   end
 
@@ -120,50 +150,40 @@ describe Lita::Adapters::Slack::ChatService, lita: true do
     let(:ts) { "1234.5678" }
 
     it "can send a delete to a room source" do
-      expect(subject.api).to receive(:chat_delete).with(channel: channel, ts: ts)
+      expect_api_call("chat.delete", channel: channel, ts: ts)
       subject.delete_message(room_source, ts)
     end
 
     it "can send a delete to a room" do
-      expect(subject.api).to receive(:chat_delete).with(channel: channel, ts: ts)
+      expect_api_call("chat.delete", channel: channel, ts: ts)
       subject.delete_message(room, ts)
     end
 
     it "can send a delete to a user" do
-      expect(subject.api).to receive(:chat_delete).with(channel: username, ts: ts)
+      expect_api_call("chat.delete", channel: username, ts: ts)
       subject.delete_message(user, ts)
     end
 
     it "can send a delete to a channel" do
-      expect(subject.api).to receive(:chat_delete).with(channel: channel, ts: ts)
+      expect_api_call("chat.delete", channel: channel, ts: ts)
       subject.delete_message(channel, ts)
     end
 
     it "returns the JSON from delete_message" do
-      expect(subject.api).to receive(:chat_delete).with(channel: channel, ts: ts).and_return("ok" => true)
+      expect_api_call("chat.delete", channel: channel, ts: ts)
       expect(subject.delete_message(room_source, ts)).to eq("ok" => true)
     end
   end
 
   describe "#send_attachments" do
-    let(:attachment) { Lita::Adapters::Slack::Attachment.new("attachment text") }
-
     it "can send a simple text attachment" do
-      expect(subject.api).to receive(:post_message).with(channel: channel, attachments: [attachment])
-
-      subject.send_attachments(room, attachment)
-    end
-
-    it "can send attachments and message arguments" do
-      expect(subject.api).to receive(:post_message).with(channel: channel, attachments: [attachment], parse: "none")
-
-      subject.send_attachments(room, attachment, parse: "none")
+      expect_api_call("chat.postMessage", channel: channel, attachments: %|[{"fallback":"attachment text","text":"attachment text"}]|)
+      subject.send_attachments(room, Lita::Adapters::Slack::Attachment.new("attachment text"))
     end
 
     it "is aliased as send_attachment" do
-      expect(subject.api).to receive(:post_message).with(channel: channel, attachments: [attachment])
-
-      subject.send_attachment(room, attachment)
+      expect_api_call("chat.postMessage", channel: channel, attachments: %|[{"fallback":"attachment text","text":"attachment text"}]|)
+      subject.send_attachment(room, Lita::Adapters::Slack::Attachment.new("attachment text"))
     end
   end
 end

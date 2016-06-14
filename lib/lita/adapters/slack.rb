@@ -16,7 +16,6 @@ module Lita
       #
       config :token, type: String, required: true
       config :proxy, type: String
-      config :default_message_arguments, type: Hash, default: { as_user: true }
       config :parse, type: [String]
       config :link_names, type: [true, false]
       config :unfurl_links, type: [true, false]
@@ -45,8 +44,14 @@ module Lita
         room_roster target.id
       end
 
-      extend Forwardable
-      def_delegators :chat_service, :send_messages
+      def send_messages(target, strings=[])
+        arguments = {}
+        arguments[:parse] = config.parse unless config.parse.nil?
+        arguments[:link_names] = config.link_names ? 1 : 0 unless config.link_names.nil?
+        arguments[:unfurl_links] = config.unfurl_links unless config.unfurl_links.nil?
+        arguments[:unfurl_media] = config.unfurl_media unless config.unfurl_media.nil?
+        api.call_api("chat.postMessage", channel: api.channel_for(target), text: Array(strings).join("\n"), **arguments)
+      end
 
       def set_topic(target, topic)
         channel = target.room
