@@ -96,13 +96,13 @@ module Lita
 
       def room_roster(room_id, api)
         case room_id
-        when /^C0/
+        when /^C/
           channel_roster room_id, api
-        when /^G0/
+        when /^G/
           # Groups & MPIMs have the same room ID pattern, check both if needed
           roster = group_roster room_id, api
           roster.empty? ? mpim_roster(room_id, api) : roster
-        when /^D0/
+        when /^D/
           im_roster room_id, api
         end
       end
