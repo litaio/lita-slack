@@ -110,6 +110,72 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           subject.handle
         end
       end
+      
+      context "mentioning a Slack user" do
+          let(:user) { Lita::User.create('U023BECGF', name: "Bobby Tables", mention_name: 'bobby') }
+          let(:payload) { {users: [user]} }
+        
+        context "by mention name" do
+          let(:data) do
+            {
+              "type" => "message",
+              "channel" => "C2147483705",
+              "user" => "U01234567",
+              "text" => "#{user.mention_name} Hello"
+            }
+          end
+
+          before do
+            allow(Lita::Message).to receive(:new).with( robot, "#{user.mention_name} Hello", source).and_return(message)
+          end
+
+          it "triggers a :mention event" do
+            expect(robot).to receive(:trigger).with(:mention, payload)  
+
+            subject.handle
+          end
+        end
+
+        context "by user name" do
+          let(:data) do
+            {
+              "type" => "message",
+              "channel" => "C2147483705",
+              "user" => "U01234567",
+              "text" => "#{user.name} Hello"
+            }
+          end        
+
+          before do
+            allow(Lita::Message).to receive(:new).with( robot, "#{user.name} Hello", source).and_return(message)
+          end
+
+          it "triggers a :mention event" do
+            expect(robot).to receive(:trigger).with(:mention, payload)
+            subject.handle
+          end
+        end
+
+        context "with @-style Slack mention" do
+          let(:data) do
+            {
+              "type" => "message",
+              "channel" => "C2147483705",
+              "user" => "U01234567",
+              "text" => "<@#{user.id}> Hello"
+            }
+          end
+
+          before do
+            allow(Lita::Message).to receive(:new).with( robot, "@#{user.mention_name} Hello", source).and_return(message)
+          end
+
+          it "triggers a :mention event" do
+            expect(robot).to receive(:trigger).with(:mention, payload)
+            subject.handle
+          end
+        end
+      end
 
       context "when the message has attach" do
         let(:data) do
