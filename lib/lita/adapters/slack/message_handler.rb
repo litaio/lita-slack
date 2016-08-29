@@ -150,6 +150,7 @@ module Lita
 
         def handle_message
           return unless supported_subtype?
+          return if data["user"] == 'USLACKBOT'
 
           user = User.find_by_id(data["user"]) || User.create(data["user"])
 

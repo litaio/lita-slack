@@ -473,6 +473,21 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
       end
     end
 
+    context "with a message from slackbot" do
+      let(:data) do
+        {
+          "type" => "message",
+          "user" => "USLACKBOT"
+        }
+      end
+
+      it "does not dispatch the message to Lita" do
+        expect(robot).not_to receive(:receive)
+
+        subject.handle
+      end
+    end
+
     context "with a message from the robot itself" do
       let(:data) do
         {
