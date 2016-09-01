@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Lita::Adapters::Slack::MessageHandler, lita: true do
-  subject { described_class.new(robot, robot_id, data) }
+  subject { described_class.new(robot, robot_id, data, config) }
 
   before do
     allow(robot).to receive(:trigger)
@@ -12,6 +12,7 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
   let(:robot_id) { 'U12345678' }
   let(:channel) { Lita::Adapters::Slack::SlackChannel.new('C2147483705', 'general', 1360782804, 'U023BECGF', raw_data) }
   let(:raw_data) { Hash.new }
+  let(:config) { Lita::Adapters::Slack.configuration_builder.build }
 
   describe "#handle" do
     context "with a hello message" do
@@ -152,6 +153,34 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           subject.handle
         end
       end
+
+      context "with a message from another robot" do
+        let(:data) do
+          {
+            "type" => "message",
+            "subtype" => "bot_message",
+            "channel" => "C2147483705",
+            "user" => "U023BECGF",
+            "text" => "Hello",
+            "ts" => "1234.5678"
+          }
+        end
+
+        it "does dispatch the message to Lita" do
+          config.supported_message_subtypes = ["bot_message"]
+          expect(robot).to receive(:receive)
+
+          subject.handle
+        end
+
+        it "does not dispatch the message to Lita when not configured" do
+          config.supported_message_subtypes = nil
+          expect(robot).not_to receive(:receive)
+
+          subject.handle
+        end
+      end
+
 
       describe "Removing message formatting" do
 
