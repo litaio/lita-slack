@@ -168,8 +168,11 @@ module Lita
           # avoid processing reactions added/removed by self
           return if from_self?(user)
 
+          # find or create item_user
+          item_user = User.find_by_id(data["item_user"]) || User.create(data["item_user"])
+
           # build a payload following slack convention for reactions
-          payload = { user: user, name: data["reaction"], item: data["item"], event_ts: data["event_ts"] }
+          payload = { user: user, name: data["reaction"], item_user: item_user, item: data["item"], event_ts: data["event_ts"] }
 
           # trigger the appropriate slack reaction event
           robot.trigger("slack_#{type}".to_sym, payload)
