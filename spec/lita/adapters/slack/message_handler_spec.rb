@@ -596,16 +596,19 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
         {
           "type" => "reaction_added",
           "user" => "U023BECGF",
+          "item_user" => "U0G9QF9C6",
           "item"=>{"type"=>"message", "channel"=>"C2147483705", "ts"=>"1234567.000008"},
           "reaction"=>"+1",
           "event_ts"=>"1234.5678"
         }
       end
       let(:user) { instance_double('Lita::User', id: 'U023BECGF') }
-      let(:payload) { {user: user, name: data["reaction"], item: data["item"], event_ts: data["event_ts"]} }
+      let(:item_user) { instance_double('Lita::User', id: 'U0G9QF9C6') }
+      let(:payload) { {user: user, name: data["reaction"], item_user: item_user, item: data["item"], event_ts: data["event_ts"]} }
 
       before do
-        allow(Lita::User).to receive(:find_by_id).and_return(user)
+        allow(Lita::User).to receive(:find_by_id).with(user.id).and_return(user)
+        allow(Lita::User).to receive(:find_by_id).with(item_user.id).and_return(item_user)
         allow(robot).to receive(:trigger).with(:slack_reaction_added, payload)
       end
 
@@ -620,16 +623,19 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
         {
           "type" => "reaction_removed",
           "user" => "U023BECGF",
+          "item_user" => "U0G9QF9C6",
           "item"=>{"type"=>"message", "channel"=>"C2147483705", "ts"=>"1234567.000008"},
           "reaction"=>"+1",
           "event_ts"=>"1234.5678"
         }
       end
       let(:user) { instance_double('Lita::User', id: 'U023BECGF') }
-      let(:payload) { {user: user, name: data["reaction"], item: data["item"], event_ts: data["event_ts"]} }
+      let(:item_user) { instance_double('Lita::User', id: 'U0G9QF9C6') }
+      let(:payload) { {user: user, name: data["reaction"], item_user: item_user, item: data["item"], event_ts: data["event_ts"]} }
 
       before do
         allow(Lita::User).to receive(:find_by_id).and_return(user)
+        allow(Lita::User).to receive(:find_by_id).with(item_user.id).and_return(item_user)
         allow(robot).to receive(:trigger).with(:slack_reaction_removed, payload)
       end
 

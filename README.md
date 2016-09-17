@@ -58,7 +58,7 @@ Lita will join your default channel after initial setup. To have it join additio
 * `:connected` - When the robot has connected to Slack. No payload.
 * `:disconnected` - When the robot has disconnected from Slack. No payload.
 * `:slack_channel_created` - When the robot creates/updates a channel's or group's info, as directed by Slack. The payload has a single object, a `Lita::Slack::Adapters::SlackChannel` object, under the `:slack_channel` key.
-* `:slack_reaction_added` - When a reaction has been added to a previous message. The payload includes `:user` (a `Lita::User` for the sender of the message in question), `:name` (the string name of the reaction added), `:item` (a hash of raw data from Slack about the message), and `:event_ts` (a string timestamp used to identify the message).
+* `:slack_reaction_added` - When a reaction has been added to a previous message. The payload includes `:user` (a `Lita::User` for the sender of the message in question), `:name` (the string name of the reaction added), `:item_user` (a `Lita::User` for the user that created the original item that has been reacted to), `:item` (a hash of raw data from Slack about the message), and `:event_ts` (a string timestamp used to identify the message).
 * `:slack_reaction_removed` - When a reaction has been removed from a previous message. The payload is the same as the `:slack_reaction_added` message.
 * `:slack_user_created` - When the robot creates/updates a user's info - name, mention name, etc., as directed by Slack. The payload has a single object, a `Lita::Slack::Adapters::SlackUser` object, under the `:slack_user` key.
 
