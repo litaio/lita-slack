@@ -45,6 +45,49 @@ describe Lita::Adapters::Slack::UserCreator do
         described_class.create_users([bobby], robot, robot_id)
       end
     end
+
+    context "with supplemental profile data" do
+      let(:slack_data) do
+        {
+          "id" => "U023BECGF",
+          "name" => "bobby",
+          "real_name" => real_name,
+          "profile" => {
+              "first_name" => "Bobby",
+              "last_name" => "Tables",
+              "real_name" => real_name,
+              "email" => email,
+              # Tests that top-level attributes override profile ones
+              name: "Should be clobbered by top-level name",
+              # Various invalid attributes that should not be passed to Lita
+              "null-attribute" => nil,
+              "empty-string-attribute" => '',
+              "empty-array-attribute" => [],
+              "compactible-array-attribute" => [ nil ]
+          }
+        }
+      end
+
+      let (:correct_metadata) do
+        {
+          name: 'Bobby Tables',
+          mention_name: 'bobby',
+          "first_name" => "Bobby",
+          "last_name" => "Tables",
+          "real_name" => real_name,
+          "email" => email
+        }
+      end
+
+      it "submits profile data as part of the user record" do
+        expect(Lita::User).to receive(:create).with(
+          'U023BECGF',
+          correct_metadata
+        )
+
+        described_class.create_users([bobby], robot, robot_id)
+      end
+    end
   end
 
   describe ".create_user" do
