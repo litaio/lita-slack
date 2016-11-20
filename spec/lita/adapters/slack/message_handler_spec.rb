@@ -650,7 +650,7 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
 
       it "logs the type" do
         expect(Lita.logger).to receive(:info).with(
-          "??? event received from Slack."
+          "slack_??? event received from Slack."
         )
 
         subject.handle
