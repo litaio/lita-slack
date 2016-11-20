@@ -179,9 +179,11 @@ module Lita
         end
 
         def handle_unknown
-          unless data["reply_to"]
-            log.debug("#{type} event received from Slack and will be ignored.")
-          end
+          return if data["reply_to"]
+
+          log.info("slack_#{type} event received from Slack.")
+
+          robot.trigger("slack_#{type}".to_sym, data)
         end
 
         def handle_user_change

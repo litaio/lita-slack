@@ -649,8 +649,8 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
       let(:data) { { "type" => "???" } }
 
       it "logs the type" do
-        expect(Lita.logger).to receive(:debug).with(
-          "??? event received from Slack and will be ignored."
+        expect(Lita.logger).to receive(:info).with(
+          "??? event received from Slack."
         )
 
         subject.handle
