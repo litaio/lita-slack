@@ -113,7 +113,8 @@ module Lita
         end
 
         def dispatch_message(user)
-          source = Source.new(user: user, room: channel)
+          room = Room.find_by_id(channel)
+          source = Source.new(user: user, room: room || channel)
           source.private_message! if channel && channel[0] == "D"
           message = Message.new(robot, body, source)
           message.command! if source.private_message?
