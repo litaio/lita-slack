@@ -27,8 +27,8 @@ module Lita
         attr_reader :name
         # @return [String] The user's display name, e.g. Alice Bobhart
         attr_reader :real_name
-        # @return [String] The user's email address, e.g. alice@example.com
-        attr_reader :email
+        # @return [Hash] The user's profile object from slack
+        attr_reader :profile
         # @return [Hash] The raw user data received from Slack, including many more fields.
         attr_reader :metadata
 
@@ -36,7 +36,7 @@ module Lita
           @id = id
           @name = name
           @real_name = real_name.to_s
-          @email = metadata['email'].to_s
+          @profile = metadata['profile'] || Hash.new('')
           @metadata = metadata
         end
 
