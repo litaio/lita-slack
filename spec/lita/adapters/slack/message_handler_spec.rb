@@ -37,12 +37,14 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
       let(:message) { instance_double('Lita::Message', command!: false, extensions: {}) }
       let(:source) { instance_double('Lita::Source', private_message?: false) }
       let(:user) { instance_double('Lita::User', id: 'U023BECGF') }
+      let(:room) { instance_double('Lita::Room', id: "C2147483705", name: "general") }
 
       before do
         allow(Lita::User).to receive(:find_by_id).and_return(user)
+        allow(Lita::Room).to receive(:find_by_id).and_return(room)
         allow(Lita::Source).to receive(:new).with(
           user: user,
-          room: "C2147483705"
+          room: room
         ).and_return(source)
         allow(Lita::Message).to receive(:new).with(robot, "Hello", source).and_return(message)
         allow(robot).to receive(:receive).with(message)
@@ -69,6 +71,7 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
         end
 
         before do
+          allow(Lita::Room).to receive(:find_by_id).and_return(nil)
           allow(Lita::Source).to receive(:new).with(
             user: user,
             room: "D2147483705"
