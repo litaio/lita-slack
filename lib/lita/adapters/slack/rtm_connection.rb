@@ -49,7 +49,7 @@ module Lita
             websocket.on(:message) { |event| receive_message(event) }
             websocket.on(:close) do
               log.info("Disconnected from Slack.")
-              shut_down
+              EventLoop.safe_stop
             end
             websocket.on(:error) { |event| log.debug("WebSocket error: #{event.message}") }
 
@@ -64,7 +64,7 @@ module Lita
         end
 
         def shut_down
-          if websocket
+          if websocket_open?
             log.debug("Closing connection to the Slack Real Time Messaging API.")
             websocket.close
           end
@@ -115,6 +115,13 @@ module Lita
           options[:proxy] = { :origin => config.proxy } if config.proxy
           options
         end
+
+        # States are defined in https://github.com/faye/faye-websocket-ruby/blob/master/lib/faye/websocket/api.rb
+        # Currently, it's the best available option to inspect websocket state
+        def websocket_open?
+          websocket && websocket.ready_state <= 1
+        end
+
       end
     end
   end
