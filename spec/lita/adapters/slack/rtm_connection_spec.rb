@@ -136,6 +136,7 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
       allow(Faye::WebSocket::Client).to receive(:new).and_return(websocket)
       allow(websocket).to receive(:on)
       allow(websocket).to receive(:close)
+      allow(websocket).to receive(:ready_state).and_return(1)
       allow(Lita::Adapters::Slack::EventLoop).to receive(:defer).and_yield
     end
 
