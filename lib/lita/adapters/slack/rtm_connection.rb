@@ -64,7 +64,7 @@ module Lita
         end
 
         def shut_down
-          if websocket_open?
+          if websocket && EventLoop.running?
             log.debug("Closing connection to the Slack Real Time Messaging API.")
             websocket.close
           end
@@ -114,12 +114,6 @@ module Lita
           options = { ping: 10 }
           options[:proxy] = { :origin => config.proxy } if config.proxy
           options
-        end
-
-        # States are defined in https://github.com/faye/faye-websocket-ruby/blob/master/lib/faye/websocket/api.rb
-        # Currently, it's the best available option to inspect websocket state
-        def websocket_open?
-          websocket && websocket.ready_state <= 1
         end
 
       end
