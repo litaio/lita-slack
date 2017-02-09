@@ -65,6 +65,20 @@ module Lita
           )
         end
 
+        def send_file_content(content, filename, filetype = "text", title = nil,
+          initial_comment = nil, channels = nil)
+
+          call_api(
+            "files.upload",
+            content: content,
+            filetype: filetype,
+            filename: filename,
+            title: title,
+            initial_comment: initial_comment,
+            channels: channels
+          )
+        end
+
         def set_topic(channel, topic)
           call_api("channels.setTopic", channel: channel, topic: topic)
         end
