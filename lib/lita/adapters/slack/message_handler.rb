@@ -156,7 +156,8 @@ module Lita
           user = User.find_by_id(data["user"]) || User.create(data["user"])
 
           return if from_self?(user)
-
+          
+          mentions_user?
           dispatch_message(user)
         end
 
@@ -207,6 +208,25 @@ module Lita
           else
             true
           end
+        end
+
+        def mentions_user?
+          return if @data['text'].nil?
+          
+          keywords = User.redis.keys.map { |n| n.sub(/\Aname:|\Amention_name:|\Aid:/, '')}
+          user_aliases = Regexp.union(keywords)
+          matches = @data['text'].scan(user_aliases)
+          
+          if matches.any?
+            mentioned_users = matches.map { |str| User.fuzzy_find(str) }
+            mentioned_users.compact!
+            return if mentioned_users.empty?
+          else
+            return
+          end
+
+          payload = { users: mentioned_users }
+          robot.trigger(:mention, payload)
         end
       end
     end
