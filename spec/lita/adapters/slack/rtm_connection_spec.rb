@@ -128,6 +128,7 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
 
   describe "#send_messages" do
     let(:message_json) { MultiJson.dump(id: 1, type: 'message', text: 'hi', channel: channel_id) }
+    let(:msg_parse_mode_json) { MultiJson.dump(id: 1, type: 'message', text: 'hi', channel: channel_id, parse: 'none') }
     let(:channel_id) { 'C024BE91L' }
     let(:websocket) { instance_double("Faye::WebSocket::Client") }
 
@@ -152,6 +153,14 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
         expect do
           subject.send_messages(channel_id, ['x' * 16_001])
         end.to raise_error(ArgumentError)
+      end
+    end
+
+    it "writes the parse mode if supplied" do
+      with_websocket(subject, queue) do |websocket|
+        expect(websocket).to receive(:send).with(msg_parse_mode_json)
+
+        subject.send_messages(channel_id, ['hi', {parse: "none"}])
       end
     end
   end
