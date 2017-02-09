@@ -49,7 +49,7 @@ module Lita
             websocket.on(:message) { |event| receive_message(event) }
             websocket.on(:close) do
               log.info("Disconnected from Slack.")
-              shut_down
+              EventLoop.safe_stop
             end
             websocket.on(:error) { |event| log.debug("WebSocket error: #{event.message}") }
 
@@ -64,7 +64,7 @@ module Lita
         end
 
         def shut_down
-          if websocket
+          if websocket && EventLoop.running?
             log.debug("Closing connection to the Slack Real Time Messaging API.")
             websocket.close
           end
@@ -115,6 +115,7 @@ module Lita
           options[:proxy] = { :origin => config.proxy } if config.proxy
           options
         end
+
       end
     end
   end
