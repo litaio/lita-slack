@@ -13,7 +13,7 @@ module Lita
     class Slack < Adapter
       # @api private
       class RTMConnection
-        MAX_MESSAGE_BYTES = 16_000
+        MAX_MESSAGE_BYTES = 15_872
 
         class << self
           def build(robot, config)
@@ -101,13 +101,11 @@ module Lita
         end
 
         def safe_payload_for(channel, string)
-          payload = payload_for(channel, string)
-
-          if payload.size > MAX_MESSAGE_BYTES
-            raise ArgumentError, "Cannot send payload greater than #{MAX_MESSAGE_BYTES} bytes."
+          if string.bytesize > MAX_MESSAGE_BYTES
+            log.debug("Cannot send message payload greater than #{MAX_MESSAGE_BYTES} bytes. Truncating message.")
+            string = "#{string[0..MAX_MESSAGE_BYTES]} ... (message truncated)"
           end
-
-          payload
+          payload = payload_for(channel, string)
         end
 
         def websocket_options
