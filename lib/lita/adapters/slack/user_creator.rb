@@ -26,8 +26,8 @@ module Lita
           end
 
           def update_robot(robot, slack_user)
-            robot.name = slack_user.real_name
-            robot.mention_name = slack_user.name
+            robot.name = slack_user.real_name unless robot.name
+            robot.mention_name = slack_user.name unless robot.mention_name
           end
         end
       end
