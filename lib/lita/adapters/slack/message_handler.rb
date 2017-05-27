@@ -39,17 +39,28 @@ module Lita
         attr_reader :type
 
         def body
-          normalized_message = if data["text"]
-            data["text"].sub(/^\s*<@#{robot_id}>/, "@#{robot.mention_name}")
+          normalized_text = if data["text"]
+                              data["text"].sub(/^\s*<@#{robot_id}>/, "@#{robot.mention_name}")
+                            end
+
+          normalized_text = remove_formatting(normalized_text) unless normalized_text.nil?
+
+          lines = Array(data["attachments"]).inject([normalized_text]){|total, att| total.concat parse_attachment(att)}
+          lines.compact.join("\n")
+        end
+
+        def parse_attachment(a)
+          lines = []
+          lines << a["pretext"]
+          lines << a["author_name"]
+          lines << a["title"]
+          lines << a["text"]
+          Array(a["fields"]).map do |field|
+            lines << field["title"]
+            lines << field["value"]
           end
-
-         normalized_message = remove_formatting(normalized_message) unless normalized_message.nil?
-
-          attachment_text = Array(data["attachments"]).map do |attachment|
-            attachment["text"] || attachment["fallback"]
-          end
-
-          ([normalized_message] + attachment_text).compact.join("\n")
+          lines << a["fallback"] if lines.none?
+          lines.compact.map(&:strip).reject(&:empty?)
         end
 
         def remove_formatting(message)
@@ -118,7 +129,7 @@ module Lita
           source.private_message! if channel && channel[0] == "D"
           message = Message.new(robot, body, source)
           message.command! if source.private_message?
-          message.extensions[:slack] = { timestamp: data["ts"] }
+          message.extensions[:slack] = { timestamp: data["ts"], attachments: data["attachments"] }
           log.debug("Dispatching message to Lita from #{user.id}.")
           robot.receive(message)
         end
@@ -195,15 +206,13 @@ module Lita
         end
 
         # Types of messages Lita should dispatch to handlers.
-        def supported_message_subtypes
-          %w(me_message)
-        end
+        SUPPORTED_MESSAGE_SUBTYPES = %w(me_message)
 
         def supported_subtype?
           subtype = data["subtype"]
 
           if subtype
-            supported_message_subtypes.include?(subtype)
+            SUPPORTED_MESSAGE_SUBTYPES.include?(subtype)
           else
             true
           end
