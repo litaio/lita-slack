@@ -114,12 +114,10 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
         end
       end
 
-      context "when the message has attach", focus: true do
-
-
+      context "when the message has attach" do
         let(:data) do
           {
-            "type"=>"message",
+            "type" =>"message",
             "channel" => "C2147483705",
             "user" => "U023BECGF",
             "text" => "Text",
@@ -127,8 +125,8 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
               [{
                 "fallback" => "attached fallback",
                 "text" => "attached text",
-                "pretext"=>"attached pretext",
-                "title"=>"attached title",
+                "pretext" => "attached pretext",
+                "title" =>"attached title",
                 "fields" => [{ "title" => "attached title", "value" => "attached value" }]
                }]
           }
@@ -144,7 +142,6 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           subject.handle
           expect(message.extensions[:slack][:attachments]).to eq(data["attachments"])
         end
-        
       end
 
       context "when the message is nil" do

@@ -39,22 +39,25 @@ module Lita
         attr_reader :type
 
         def body
-          normalized_text = if data["text"]
-                              data["text"].sub(/^\s*<@#{robot_id}>/, "@#{robot.mention_name}")
-                            end
+          normalized_text = nil
+          if data["text"]
+            normalized_text = data["text"].sub(/^\s*<@#{robot_id}>/, "@#{robot.mention_name}")
+          end
 
           normalized_text = remove_formatting(normalized_text) unless normalized_text.nil?
 
-          lines = Array(data["attachments"]).inject([normalized_text]){|total, att| total.concat parse_attachment(att)}
+          lines = Array(data["attachments"]).inject([normalized_text]){
+            |total, att| total.concat parse_attachment(att)
+          }
           lines.compact.join("\n")
         end
 
-        def parse_attachment(a)
+        def parse_attachment(attachment)
           lines = []
-          lines << a["pretext"]
-          lines << a["title"]
-          lines << a["text"] || a["fallback"]
-          Array(a["fields"]).map do |field|
+          lines << attachment["pretext"]
+          lines << attachment["title"]
+          lines << attachment["text"] || attachment["fallback"]
+          Array(attachment["fields"]).map do |field|
             lines << field["title"]
             lines << field["value"]
           end
@@ -182,7 +185,10 @@ module Lita
           item_user = User.find_by_id(data["item_user"]) || User.create(data["item_user"])
 
           # build a payload following slack convention for reactions
-          payload = { user: user, name: data["reaction"], item_user: item_user, item: data["item"], event_ts: data["event_ts"] }
+          payload = {
+            user: user, name: data["reaction"], item_user: item_user,
+            item: data["item"], event_ts: data["event_ts"]
+          }
 
           # trigger the appropriate slack reaction event
           robot.trigger("slack_#{type}".to_sym, payload)
