@@ -114,26 +114,37 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
         end
       end
 
-      context "when the message has attach" do
+      context "when the message has attach", focus: true do
+
+
         let(:data) do
           {
-            "type" => "message",
+            "type"=>"message",
             "channel" => "C2147483705",
             "user" => "U023BECGF",
-            "text" => "Hello",
-            "attachments" => [{"text" => "attached hello"}]
+            "text" => "Text",
+            "attachments" =>
+              [{
+                "fallback" => "attached fallback",
+                "text" => "attached text",
+                "pretext"=>"attached pretext",
+                "title"=>"attached title",
+                "fields" => [{ "title" => "attached title", "value" => "attached value" }]
+               }]
           }
         end
 
-        it "recives attachment text" do
+        it "receives both serialized and raw attachments" do
           expect(Lita::Message).to receive(:new).with(
             robot,
-            "Hello\nattached hello",
+            "Text\nattached pretext\nattached title\nattached text\nattached title\nattached value",
             source
           ).and_return(message)
 
           subject.handle
+          expect(message.extensions[:slack][:attachments]).to eq(data["attachments"])
         end
+        
       end
 
       context "when the message is nil" do
