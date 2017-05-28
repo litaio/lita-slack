@@ -52,14 +52,12 @@ module Lita
         def parse_attachment(a)
           lines = []
           lines << a["pretext"]
-          lines << a["author_name"]
           lines << a["title"]
-          lines << a["text"]
+          lines << a["text"] || a["fallback"]
           Array(a["fields"]).map do |field|
             lines << field["title"]
             lines << field["value"]
           end
-          lines << a["fallback"] if lines.none?
           lines.compact.map(&:strip).reject(&:empty?)
         end
 
