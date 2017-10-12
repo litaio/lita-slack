@@ -23,6 +23,13 @@ module Lita
           api.send_attachments(target, Array(attachments))
         end
         alias_method :send_attachment, :send_attachments
+
+        # @param dialog The dialog to be shown to the user
+        # @param trigger_id The trigger id of a slash command request URL or interactive message
+        # @return [void]
+        def open_dialog(dialog, trigger_id)
+          api.open_dialog(dialog, trigger_id)
+        end
       end
     end
   end

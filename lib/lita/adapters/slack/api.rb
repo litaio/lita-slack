@@ -55,6 +55,14 @@ module Lita
           )
         end
 
+        def open_dialog(dialog, trigger_id)
+          call_api(
+            "dialog.open",
+            dialog: MultiJson.dump(dialog),
+            trigger_id: trigger_id,
+          )
+        end
+
         def send_messages(channel_id, messages)
           call_api(
             "chat.postMessage",
