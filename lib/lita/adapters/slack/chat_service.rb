@@ -31,6 +31,13 @@ module Lita
         def open_dialog(dialog, trigger_id)
           api.open_dialog(dialog, trigger_id)
         end
+
+        # @param channel The channel containing the message to be deleted
+        # @param ts The timestamp of the message
+        # @return [void]
+        def delete(channel, ts)
+          api.delete(channel, ts)
+        end
       end
     end
   end

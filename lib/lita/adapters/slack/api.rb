@@ -74,6 +74,10 @@ module Lita
           )
         end
 
+        def delete(channel, ts)
+          call_api("chat.delete", channel: channel, ts: ts)
+        end
+
         def set_topic(channel, topic)
           call_api("channels.setTopic", channel: channel, topic: topic)
         end
