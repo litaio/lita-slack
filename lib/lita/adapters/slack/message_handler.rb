@@ -119,6 +119,7 @@ module Lita
           message = Message.new(robot, body, source)
           message.command! if source.private_message?
           message.extensions[:slack] = { timestamp: data["ts"] }
+          message.extensions[:slack][:thread_ts] = data["thread_ts"] if data["thread_ts"]
           log.debug("Dispatching message to Lita from #{user.id}.")
           robot.receive(message)
         end
