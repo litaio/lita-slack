@@ -46,12 +46,21 @@ module Lita
           call_api("im.list")
         end
 
-        def send_attachments(room_or_user, attachments)
+        def send_attachments(room_or_user, attachments, options = {})
           call_api(
             "chat.postMessage",
             as_user: true,
             channel: room_or_user.id,
             attachments: MultiJson.dump(attachments.map(&:to_hash)),
+            **options
+          )
+        end
+
+        def open_dialog(dialog, trigger_id)
+          call_api(
+            "dialog.open",
+            dialog: MultiJson.dump(dialog),
+            trigger_id: trigger_id,
           )
         end
 
@@ -63,6 +72,10 @@ module Lita
             channel: channel_id,
             text: messages.join("\n"),
           )
+        end
+
+        def delete(channel, ts)
+          call_api("chat.delete", channel: channel, ts: ts)
         end
 
         def set_topic(channel, topic)
