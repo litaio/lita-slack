@@ -38,13 +38,23 @@ module Lita
         room_roster target.id, api
       end
 
-      def send_messages(target, strings)
+      # @param [Array] messages list of String messages or Symbol emoji reactions
+      def send_messages(target, messages)
         api = API.new(config)
 
-        if target.thread_ts
-          api.reply_in_thread(channel_for(target), strings, target.thread_ts)
-        else
-          api.send_messages(channel_for(target), strings)
+        strings = messages.select { |s| s.is_a?(String) }
+        symbols = messages.select { |s| s.is_a?(Symbol) }
+
+        symbols.each do |s|
+          api.react_with_emoji(channel_for(target), s.to_s, target.timestamp)
+        end
+
+        if strings.any?
+          if target.thread_ts
+            api.reply_in_thread(channel_for(target), strings, target.thread_ts)
+          else
+            api.send_messages(channel_for(target), strings)
+          end
         end
       end
 
