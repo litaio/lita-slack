@@ -42,16 +42,19 @@ module Lita
       def send_messages(target, messages)
         api = API.new(config)
 
+        emoji_ts = target.try(:timestamp)
+        thread_ts = target.try(:thread_ts)
+
         strings = messages.select { |s| s.is_a?(String) }
         symbols = messages.select { |s| s.is_a?(Symbol) }
 
         symbols.each do |s|
-          api.react_with_emoji(channel_for(target), s.to_s, target.timestamp)
-        end
+          api.react_with_emoji(channel_for(target), s.to_s, emoji_ts)
+        end if emoji_ts
 
         if strings.any?
-          if target.thread_ts
-            api.reply_in_thread(channel_for(target), strings, target.thread_ts)
+          if thread_ts
+            api.reply_in_thread(channel_for(target), strings, thread_ts)
           else
             api.send_messages(channel_for(target), strings)
           end
