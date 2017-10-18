@@ -75,6 +75,17 @@ module Lita
           )
         end
 
+        def react_with_emoji(channel_id, emoji, ts)
+          call_api(
+            "reactions.add",
+            **post_message_config,
+            as_user: true,
+            channel: channel_id,
+            name: emoji,
+            timestamp: ts
+          )
+        end
+
         def set_topic(channel, topic)
           call_api("channels.setTopic", channel: channel, topic: topic)
         end
