@@ -55,6 +55,16 @@ module Lita
           )
         end
 
+        def reply_in_thread(channel_id, messages, thread_ts)
+          call_api(
+            "chat.postMessage",
+            as_user: true,
+            channel: channel_id,
+            text: messages,
+            thread_ts: thread_ts
+          )
+        end
+
         def send_messages(channel_id, messages)
           call_api(
             "chat.postMessage",

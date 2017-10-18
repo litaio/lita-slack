@@ -23,6 +23,10 @@ module Lita
           api.send_attachments(target, Array(attachments))
         end
         alias_method :send_attachment, :send_attachments
+
+        def reply_in_thread(channel_id, messages, thread_ts)
+          api.reply_in_thread(channel_id,  messages.join("\n"), thread_ts)
+        end
       end
     end
   end
