@@ -4,6 +4,7 @@ require 'lita/adapters/slack/team_data'
 require 'lita/adapters/slack/slack_im'
 require 'lita/adapters/slack/slack_user'
 require 'lita/adapters/slack/slack_channel'
+require 'lita/adapters/slack/slack_source'
 
 module Lita
   module Adapters
@@ -60,7 +61,7 @@ module Lita
             "chat.postMessage",
             as_user: true,
             channel: channel_id,
-            text: messages,
+            text: messages.join("\n"),
             thread_ts: thread_ts
           )
         end

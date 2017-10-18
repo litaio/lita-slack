@@ -114,12 +114,13 @@ module Lita
 
         def dispatch_message(user)
           room = Lita::Room.find_by_id(channel)
-          source = Source.new(user: user, room: room || channel)
+          extensions = { timestamp: data["ts"] }
+          extensions[:thread_ts] = data["thread_ts"] if data["thread_ts"]
+          source = SlackSource.new(user: user, room: room || channel, extensions: extensions)
           source.private_message! if channel && channel[0] == "D"
           message = Message.new(robot, body, source)
           message.command! if source.private_message?
-          message.extensions[:slack] = { timestamp: data["ts"] }
-          message.extensions[:slack][:thread_ts] = data["thread_ts"] if data["thread_ts"]
+          message.extensions[:slack] = extensions
           log.debug("Dispatching message to Lita from #{user.id}.")
           robot.receive(message)
         end
