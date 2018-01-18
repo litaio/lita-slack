@@ -1,5 +1,5 @@
 Gem::Specification.new do |spec|
-  spec.name          = "lita-slack"
+  spec.name          = "shopify-lita-slack"
   spec.version       = "1.8.0"
   spec.authors       = ["Ken J.", "Jimmy Cuadra"]
   spec.email         = ["kenjij@gmail.com", "jimmy@jimmycuadra.com"]
@@ -24,6 +24,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "pry-byebug"
   spec.add_development_dependency "rack-test"
   spec.add_development_dependency "rake"
+  spec.add_development_dependency "package_cloud"
   spec.add_development_dependency "rspec", ">= 3.0.0"
   spec.add_development_dependency "simplecov", ">= 0.9.2"
   spec.add_development_dependency "codecov"
