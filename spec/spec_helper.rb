@@ -1,9 +1,6 @@
 require "simplecov"
-require "coveralls"
-SimpleCov.formatters = [
-  SimpleCov::Formatter::HTMLFormatter,
-  Coveralls::SimpleCov::Formatter
-]
+require "codecov"
+SimpleCov.formatter = SimpleCov::Formatter::Codecov
 SimpleCov.start { add_filter "/spec/" }
 
 require "lita-slack"
