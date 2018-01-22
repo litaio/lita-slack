@@ -1,11 +1,10 @@
 Gem::Specification.new do |spec|
-  spec.name          = "shopify-lita-slack"
+  spec.name          = "lita-slack"
   spec.version       = "1.8.0"
-  spec.authors       = ["Ken J.", "Jimmy Cuadra"]
-  spec.email         = ["kenjij@gmail.com", "jimmy@jimmycuadra.com"]
+  spec.authors       = ["Ryan Brushett"]
   spec.description   = %q{Lita adapter for Slack.}
   spec.summary       = %q{Lita adapter for Slack.}
-  spec.homepage      = "https://github.com/kenjij/lita-slack"
+  spec.homepage      = "https://github.com/Shopify/lita-slack"
   spec.license       = "MIT"
   spec.metadata      = { "lita_plugin_type" => "adapter" }
 
@@ -24,7 +23,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "pry-byebug"
   spec.add_development_dependency "rack-test"
   spec.add_development_dependency "rake"
-  spec.add_development_dependency "package_cloud"
   spec.add_development_dependency "rspec", ">= 3.0.0"
   spec.add_development_dependency "simplecov", ">= 0.9.2"
   spec.add_development_dependency "codecov"
