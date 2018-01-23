@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
-  spec.name          = "lita-slack"
-  spec.version       = "1.8.0"
+  spec.name          = "shopify-lita-slack"
+  spec.version       = "1.8.1"
   spec.authors       = ["Ryan Brushett"]
   spec.description   = %q{Lita adapter for Slack.}
   spec.summary       = %q{Lita adapter for Slack.}
