@@ -3,7 +3,7 @@ require "codecov"
 SimpleCov.formatter = SimpleCov::Formatter::Codecov
 SimpleCov.start { add_filter "/spec/" }
 
-require "lita-slack"
+require "shopify-lita-slack"
 require "lita/rspec"
 
 require "pry"
