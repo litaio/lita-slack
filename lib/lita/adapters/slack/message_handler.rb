@@ -39,17 +39,29 @@ module Lita
         attr_reader :type
 
         def body
-          normalized_message = if data["text"]
-            data["text"].sub(/^\s*<@#{robot_id}>/, "@#{robot.mention_name}")
+          normalized_text = nil
+          if data["text"]
+            normalized_text = data["text"].sub(/^\s*<@#{robot_id}>/, "@#{robot.mention_name}")
           end
 
-         normalized_message = remove_formatting(normalized_message) unless normalized_message.nil?
+          normalized_text = remove_formatting(normalized_text) unless normalized_text.nil?
 
-          attachment_text = Array(data["attachments"]).map do |attachment|
-            attachment["text"] || attachment["fallback"]
+          lines = Array(data["attachments"]).inject([normalized_text]){
+            |total, att| total.concat parse_attachment(att)
+          }
+          lines.compact.join("\n")
+        end
+
+        def parse_attachment(attachment)
+          lines = []
+          lines << attachment["pretext"]
+          lines << attachment["title"]
+          lines << attachment["text"] || attachment["fallback"]
+          Array(attachment["fields"]).map do |field|
+            lines << field["title"]
+            lines << field["value"]
           end
-
-          ([normalized_message] + attachment_text).compact.join("\n")
+          lines.compact.map(&:strip).reject(&:empty?)
         end
 
         def remove_formatting(message)
@@ -118,7 +130,7 @@ module Lita
           source.private_message! if channel && channel[0] == "D"
           message = Message.new(robot, body, source)
           message.command! if source.private_message?
-          message.extensions[:slack] = { timestamp: data["ts"] }
+          message.extensions[:slack] = { timestamp: data["ts"], attachments: data["attachments"] }
           log.debug("Dispatching message to Lita from #{user.id}.")
           robot.receive(message)
         end
@@ -173,7 +185,10 @@ module Lita
           item_user = User.find_by_id(data["item_user"]) || User.create(data["item_user"])
 
           # build a payload following slack convention for reactions
-          payload = { user: user, name: data["reaction"], item_user: item_user, item: data["item"], event_ts: data["event_ts"] }
+          payload = {
+            user: user, name: data["reaction"], item_user: item_user,
+            item: data["item"], event_ts: data["event_ts"]
+          }
 
           # trigger the appropriate slack reaction event
           robot.trigger("slack_#{type}".to_sym, payload)
@@ -195,15 +210,13 @@ module Lita
         end
 
         # Types of messages Lita should dispatch to handlers.
-        def supported_message_subtypes
-          %w(me_message)
-        end
+        SUPPORTED_MESSAGE_SUBTYPES = %w(me_message)
 
         def supported_subtype?
           subtype = data["subtype"]
 
           if subtype
-            supported_message_subtypes.include?(subtype)
+            SUPPORTED_MESSAGE_SUBTYPES.include?(subtype)
           else
             true
           end
