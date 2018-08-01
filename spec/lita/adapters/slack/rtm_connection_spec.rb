@@ -29,7 +29,7 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
   end
   let(:token) { 'abcd-1234567890-hWYd21AmMH2UHAkx29vb5c1Y' }
   let(:queue) { Queue.new }
-  let(:proxy_url) { "http://foo:3128" }
+  let(:proxy_url) { "http://example.com:3128" }
   let(:config) { Lita::Adapters::Slack.configuration_builder.build }
 
   before do
@@ -114,6 +114,16 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
       # the WebSocket.
       subject.send(:receive_message, event)
     end
+
+    context "when the WebSocket is closed from outside" do
+      it "shuts down the reactor" do
+        with_websocket(subject, queue) do |websocket|
+            websocket.close
+            expect(EM.stopping?).to be_truthy
+          end
+      end
+    end
+
   end
 
   describe "#send_messages" do

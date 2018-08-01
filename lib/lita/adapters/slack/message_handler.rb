@@ -16,6 +16,8 @@ module Lita
             handle_hello
           when "message"
             handle_message
+          when "reaction_added", "reaction_removed"
+            handle_reaction
           when "user_change", "team_join"
             handle_user_change
           when "bot_added", "bot_changed"
@@ -44,7 +46,7 @@ module Lita
          normalized_message = remove_formatting(normalized_message) unless normalized_message.nil?
 
           attachment_text = Array(data["attachments"]).map do |attachment|
-            attachment["text"]
+            attachment["text"] || attachment["fallback"]
           end
 
           ([normalized_message] + attachment_text).compact.join("\n")
@@ -123,20 +125,18 @@ module Lita
         end
 
         def dispatch_message(user)
-          source = Source.new(user: user, room: channel)
+          room = Lita::Room.find_by_id(channel)
+          source = Source.new(user: user, room: room || channel)
           source.private_message! if channel && channel[0] == "D"
           message = Message.new(robot, body, source)
           message.command! if source.private_message?
+          message.extensions[:slack] = { timestamp: data["ts"] }
           log.debug("Dispatching message to Lita from #{user.id}.")
           robot.receive(message)
         end
 
         def from_self?(user)
-          if data["subtype"] == "bot_message"
-            robot_user = User.find_by_name(robot.name)
-
-            robot_user && robot_user.id == user.id
-          end
+          user.id == robot_id
         end
 
         def handle_bot_change
@@ -163,12 +163,32 @@ module Lita
 
         def handle_message
           return unless supported_subtype?
+          return if data["user"] == 'USLACKBOT'
 
           user = User.find_by_id(data["user"]) || User.create(data["user"])
 
           return if from_self?(user)
 
           dispatch_message(user)
+        end
+
+        def handle_reaction
+          log.debug "#{type} event received from Slack"
+
+          # find or create user
+          user = User.find_by_id(data["user"]) || User.create(data["user"])
+
+          # avoid processing reactions added/removed by self
+          return if from_self?(user)
+
+          # find or create item_user
+          item_user = User.find_by_id(data["item_user"]) || User.create(data["item_user"])
+
+          # build a payload following slack convention for reactions
+          payload = { user: user, name: data["reaction"], item_user: item_user, item: data["item"], event_ts: data["event_ts"] }
+
+          # trigger the appropriate slack reaction event
+          robot.trigger("slack_#{type}".to_sym, payload)
         end
 
         def handle_unknown
@@ -188,7 +208,7 @@ module Lita
 
         # Types of messages Lita should dispatch to handlers.
         def supported_message_subtypes
-          %w(bot_message me_message)
+          %w(me_message)
         end
 
         def supported_subtype?

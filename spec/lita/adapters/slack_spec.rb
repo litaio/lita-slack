@@ -27,6 +27,12 @@ describe Lita::Adapters::Slack, lita: true do
     end
   end
 
+  describe "#mention_format" do
+    it "returns the name prefixed with an @" do
+      expect(subject.mention_format("carl")).to eq("@carl")
+    end
+  end
+
   describe "#run" do
     it "starts the RTM connection" do
       expect(rtm_connection).to receive(:run)
@@ -42,6 +48,74 @@ describe Lita::Adapters::Slack, lita: true do
     end
   end
 
+  describe "#roster" do
+    describe "via the Web API, retrieving the roster for a channel" do
+      let(:room_source) { Lita::Source.new(room: 'C024BE91L') }
+      let(:response) do
+        {
+          ok: true,
+          channel: {
+              members: ['C024BE91L']
+          }
+        }
+      end
+      let(:api) { instance_double('Lita::Adapters::Slack::API') }
+
+      before do
+        allow(Lita::Adapters::Slack::API).to receive(:new).with(subject.config).and_return(api)
+      end
+
+      it "returns UID(s)" do
+        expect(subject).to receive(:channel_roster).with(room_source.room_object.id, api)
+
+        subject.roster(room_source.room_object)
+      end
+    end
+
+    describe "via the Web API, retrieving the roster for a group/mpim channel" do
+      let(:room_source) { Lita::Source.new(room: 'G024BE91L') }
+      let(:response) do
+        {
+          ok: true,
+          groups: [{ id: 'G024BE91L' }]
+        }
+      end
+      let(:api) { instance_double('Lita::Adapters::Slack::API') }
+
+      before do
+        allow(Lita::Adapters::Slack::API).to receive(:new).with(subject.config).and_return(api)
+      end
+
+      it "returns UID(s)" do
+        expect(subject).to receive(:group_roster).with(room_source.room_object.id, api).and_return(%q{})
+        expect(subject).to receive(:mpim_roster).with(room_source.room_object.id, api).and_return(%q{G024BE91L})
+
+        subject.roster(room_source.room_object)
+      end
+    end
+
+    describe "via the Web API, retrieving the roster for an im channel" do
+      let(:room_source) { Lita::Source.new(room: 'D024BFF1M') }
+      let(:response) do
+        {
+          ok: true,
+          ims: [{ id: 'D024BFF1M' }]
+        }
+      end
+      let(:api) { instance_double('Lita::Adapters::Slack::API') }
+
+      before do
+        allow(Lita::Adapters::Slack::API).to receive(:new).with(subject.config).and_return(api)
+      end
+
+      it "returns UID" do
+        expect(subject).to receive(:im_roster).with(room_source.room_object.id, api)
+
+        subject.roster(room_source.room_object)
+      end
+    end
+  end
+
   describe "#send_messages" do
     let(:room_source) { Lita::Source.new(room: 'C024BE91L') }
     let(:user) { Lita::User.new('U023BECGF') }
@@ -50,32 +124,19 @@ describe Lita::Adapters::Slack, lita: true do
       Lita::Source.new(room: 'C024BE91L', user: user, private_message: true)
     end
 
-    it "sends messages to rooms" do
-      expect(rtm_connection).to receive(:send_messages).with(room_source.room, ['foo'])
+    describe "via the Web API" do
+      let(:api) { instance_double('Lita::Adapters::Slack::API') }
 
-      subject.run
+      before do
+        allow(Lita::Adapters::Slack::API).to receive(:new).with(subject.config).and_return(api)
+      end
 
-      subject.send_messages(room_source, ['foo'])
-    end
+      it "does not send via the RTM api" do
+        expect(rtm_connection).to_not receive(:send_messages)
+        expect(api).to receive(:send_messages).with(room_source.room, ['foo'])
 
-    it "sends messages to users" do
-      allow(rtm_connection).to receive(:im_for).with(user.id).and_return('D024BFF1M')
-
-      expect(rtm_connection).to receive(:send_messages).with('D024BFF1M', ['foo'])
-
-      subject.run
-
-      subject.send_messages(user_source, ['foo'])
-    end
-
-    it "sends messages to users when the source is marked as a private message" do
-      allow(rtm_connection).to receive(:im_for).with(user.id).and_return('D024BFF1M')
-
-      expect(rtm_connection).to receive(:send_messages).with('D024BFF1M', ['foo'])
-
-      subject.run
-
-      subject.send_messages(private_message_source, ['foo'])
+        subject.send_messages(room_source, ['foo'])
+      end
     end
   end
 

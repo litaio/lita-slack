@@ -15,7 +15,11 @@ module Lita
           end
 
           def safe_stop
-            EM.stop if EM.reactor_running?
+            EM.stop if running?
+          end
+
+          def running?
+            EM.reactor_running? && !EM.stopping?
           end
         end
       end
