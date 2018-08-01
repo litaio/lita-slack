@@ -457,6 +457,61 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           end
         end
 
+        context "remove formatting around <!date> commands" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <!date^1392734382^Posted {date_num} {time_secs}|Posted 2014-02-18 6:39:42 AM> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo Posted 2014-02-18 6:39:42 AM bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
+        context "remove formatting around <!date> commands with an optional URL" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "foo <!date^1392734382^{date_short}^https://example.com/|Feb 18, 2014 PST> bar",
+            }
+          end
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "foo Feb 18, 2014 PST (https://example.com/) bar",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
+        context "removes formatting from Slack’s unofficial example command" do
+          let(:data) do
+            {
+                "type"    => "message",
+                "channel" => "C2147483705",
+                "text"    => "bar <!foo^C12345^{foo}^http://www.example.com/|label> baz",
+            }
+          end
+
+          it "removes formatting" do
+            expect(Lita::Message).to receive(:new).with(
+                                         robot,
+                                         "bar label (http://www.example.com/) baz",
+                                         source
+                                     ).and_return(message)
+            subject.handle
+          end
+        end
+
         context "change multiple links at once" do
           let(:data) do
             {
