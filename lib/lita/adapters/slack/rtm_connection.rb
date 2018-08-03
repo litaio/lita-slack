@@ -47,8 +47,10 @@ module Lita
 
             websocket.on(:open) { log.debug("Connected to the Slack Real Time Messaging API.") }
             websocket.on(:message) { |event| receive_message(event) }
-            websocket.on(:close) do
+            websocket.on(:close) do |event|
               log.info("Disconnected from Slack.")
+              log.info(event.code)
+              log.info(event.reason)
               EventLoop.safe_stop
             end
             websocket.on(:error) { |event| log.debug("WebSocket error: #{event.message}") }
