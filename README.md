@@ -26,6 +26,7 @@ gem "lita-slack"
 * `proxy` (String) – Specify a HTTP proxy URL. (e.g. "http://squid.example.com:3128")
 * `unfurl_links` (Boolean) – Set to `true` to automatically add previews for all links in messages sent by Lita.
 * `unfurl_media` (Boolean) – Set to `false` to prevent automatic previews for media files in messages sent by Lita.
+* `handle_bot_messages` (Boolean) - Set to `false` to prevent Lita from handling messages from other bots.
 
 **Note**: When using lita-slack, the adapter will overwrite the bot's name and mention name with the values set on the server, so `config.robot.name` and `config.robot.mention_name` will have no effect.
 

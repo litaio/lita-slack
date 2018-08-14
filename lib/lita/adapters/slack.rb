@@ -13,6 +13,7 @@ module Lita
       config :link_names, type: [true, false]
       config :unfurl_links, type: [true, false]
       config :unfurl_media, type: [true, false]
+      config :handle_bot_messages, type: [true, false], default: true
 
       # Provides an object for Slack-specific features.
       def chat_service
