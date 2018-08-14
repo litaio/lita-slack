@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe Lita::Adapters::Slack::MessageHandler, lita: true do
-  subject { described_class.new(robot, robot_id, data) }
+  subject { described_class.new(robot, robot_id, config, data) }
 
   before do
     allow(robot).to receive(:trigger)
@@ -11,6 +11,7 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
   let(:robot) { instance_double('Lita::Robot', name: 'Lita', mention_name: 'lita') }
   let(:robot_id) { 'U12345678' }
   let(:channel) { Lita::Adapters::Slack::SlackChannel.new('C2147483705', 'general', 1360782804, 'U023BECGF', raw_data) }
+  let(:config) { Lita::Adapters::Slack.configuration_builder.build }
   let(:raw_data) { Hash.new }
 
   describe "#handle" do
@@ -25,7 +26,7 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
     end
 
     context "with a normal message" do
-      let(:data) do
+      let(:base_data) do
         {
           "type" => "message",
           "channel" => "C2147483705",
@@ -34,6 +35,7 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           "ts" => "1234.5678"
         }
       end
+      let(:data) { base_data }
       let(:message) { instance_double('Lita::Message', command!: false, extensions: {}) }
       let(:source) { instance_double('Lita::Source', private_message?: false) }
       let(:user) { instance_double('Lita::User', id: 'U023BECGF') }
@@ -458,6 +460,32 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
         end
 
 
+      end
+
+      context "with a message from another bot" do
+        let(:data) do
+          base_data.merge({
+            "subtype" => "bot_message",
+            "user" => "R0BBY",
+          })
+        end
+
+        it "dispatches the message to Lita" do
+          expect(robot).to receive(:receive)
+
+          subject.handle
+        end
+
+
+        context "when configured to ignore other bots" do
+          before { config.handle_bot_messages = false }
+
+          it "does not dispatch the message to Lita" do
+            expect(robot).not_to receive(:receive)
+
+            subject.handle
+          end
+        end
       end
     end
 

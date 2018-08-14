@@ -104,6 +104,7 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
       allow(Lita::Adapters::Slack::MessageHandler).to receive(:new).with(
         robot,
         'U12345678',
+        config,
         {},
       ).and_return(message_handler)
 
