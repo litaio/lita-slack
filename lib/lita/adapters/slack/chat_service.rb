@@ -46,6 +46,13 @@ module Lita
         def update_attachments(channel, ts, attachments)
           api.update_attachments(channel, ts, Array(attachments))
         end
+
+        # @param channel The channel containing the thread to send the message to
+        # @param messages The messages to send to the thread
+        # @param thread_ts  The timestamp of the thread message to reply to
+        def reply_in_thread(channel, messages, thread_ts)
+          api.reply_in_thread(channel,  messages, thread_ts)
+        end
       end
     end
   end

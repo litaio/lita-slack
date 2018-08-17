@@ -38,9 +38,33 @@ module Lita
         room_roster target.id, api
       end
 
-      def send_messages(target, strings)
+      # @param [Array] messages list of String messages or Symbol emoji reactions
+      # messages starting with the ellipsis character will start a new thread
+      def send_messages(target, messages)
         api = API.new(config)
-        api.send_messages(channel_for(target), strings)
+        channel = channel_for(target)
+        timestamp = target.try(:timestamp)
+        thread_ts = target.try(:thread_ts)
+
+        strings = messages.select { |s| s.is_a?(String) }
+        symbols = messages.select { |s| s.is_a?(Symbol) }
+
+        symbols.each do |s|
+          api.react_with_emoji(channel, s.to_s, timestamp)
+        end if timestamp
+
+        if strings[0] && strings[0][0] == '…'
+          thread_ts = timestamp
+          strings[0] = strings[0][1..-1]
+        end
+        
+        if strings.any?
+          if thread_ts
+            api.reply_in_thread(channel, strings, thread_ts)
+          else
+            api.send_messages(channel, strings)
+          end
+        end
       end
 
       def set_topic(target, topic)
