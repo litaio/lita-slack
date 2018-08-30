@@ -121,7 +121,7 @@ describe Lita::Adapters::Slack, lita: true do
     let(:user) { Lita::User.new('U023BECGF') }
     let(:user_source) { Lita::Source.new(user: user) }
     let(:private_message_source) do
-      Lita::Source.new(room: 'C024BE91L', user: user, private_message: true)
+      Lita::Adapters::Slack::SlackSource.new(room: 'C024BE91L', user: user, private_message: true)
     end
 
     describe "via the Web API" do

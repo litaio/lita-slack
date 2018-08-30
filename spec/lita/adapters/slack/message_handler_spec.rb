@@ -38,26 +38,32 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
       let(:source) { instance_double('Lita::Source', private_message?: false) }
       let(:user) { instance_double('Lita::User', id: 'U023BECGF') }
       let(:room) { instance_double('Lita::Room', id: "C2147483705", name: "general") }
+      let(:extensions) do { :timestamp => nil, :attachments => nil } end
 
       before do
         allow(Lita::User).to receive(:find_by_id).and_return(user)
         allow(Lita::Room).to receive(:find_by_id).and_return(room)
-        allow(Lita::Source).to receive(:new).with(
+        allow(Lita::Adapters::Slack::SlackSource).to receive(:new).with(
           user: user,
-          room: room
+          room: room,
+          extensions: extensions
         ).and_return(source)
         allow(Lita::Message).to receive(:new).with(robot, "Hello", source).and_return(message)
         allow(robot).to receive(:receive).with(message)
       end
 
-      it "dispatches the message to Lita" do
-        expect(robot).to receive(:receive).with(message)
-        subject.handle
-      end
+      context "with a threaded message" do
+        let(:extensions) do { :timestamp => "1234.5678", :attachments => nil } end
 
-      it "saves the timestamp in extensions" do
-        subject.handle
-        expect(message.extensions[:slack][:timestamp]).to eq("1234.5678")
+        it "dispatches the message to Lita" do
+          expect(robot).to receive(:receive).with(message)
+          subject.handle
+        end
+
+        it "saves the timestamp in extensions" do
+          subject.handle
+          expect(message.extensions[:slack][:timestamp]).to eq("1234.5678")
+        end
       end
 
       context "when the message is a direct message" do
@@ -72,9 +78,10 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
 
         before do
           allow(Lita::Room).to receive(:find_by_id).and_return(nil)
-          allow(Lita::Source).to receive(:new).with(
+          allow(Lita::Adapters::Slack::SlackSource).to receive(:new).with(
             user: user,
-            room: "D2147483705"
+            room: "D2147483705",
+            extensions: extensions
           ).and_return(source)
           allow(source).to receive(:private_message!).and_return(true)
           allow(source).to receive(:private_message?).and_return(true)
@@ -129,6 +136,20 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
                 "title" =>"attached title",
                 "fields" => [{ "title" => "attached title", "value" => "attached value" }]
                }]
+          }
+        end
+
+        let(:extensions) do
+          {
+            :attachments =>
+            [{
+              "fallback" => "attached fallback",
+              "text" => "attached text",
+              "pretext" => "attached pretext",
+              "title" =>"attached title",
+              "fields" => [{ "title" => "attached title", "value" => "attached value" }]
+             }],
+             :timestamp => nil
           }
         end
 

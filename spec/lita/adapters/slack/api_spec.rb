@@ -617,7 +617,6 @@ describe Lita::Adapters::Slack::API do
           stub.post(
             "https://slack.com/api/chat.postMessage",
             token: token,
-            link_names: 1,
             as_user: true,
             channel: room,
             text: messages.join("\n"),
