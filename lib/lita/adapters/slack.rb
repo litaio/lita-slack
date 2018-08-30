@@ -43,8 +43,8 @@ module Lita
       def send_messages(target, messages)
         api = API.new(config)
         channel = channel_for(target)
-        timestamp = target.try(:timestamp)
-        thread_ts = target.try(:thread_ts)
+        timestamp = try_get(target, :timestamp)
+        thread_ts = try_get(target, :thread_ts)
 
         strings = messages.select { |s| s.is_a?(String) }
         symbols = messages.select { |s| s.is_a?(Symbol) }
@@ -128,6 +128,14 @@ module Lita
           roster.empty? ? mpim_roster(room_id, api) : roster
         when /^D/
           im_roster room_id, api
+        end
+      end
+
+      def try_get(object, attribute)
+        if object.respond_to? attribute
+          object.attribute
+        else
+          nil
         end
       end
     end
