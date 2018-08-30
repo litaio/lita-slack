@@ -2,5 +2,10 @@ name: lita-slack
 
 up:
   - ruby:
-      version:  2.4.3
+      version: 2.4.3
+  - railgun
 
+commands:
+  test:
+    desc: Runs the rspec tests against the local redis instance
+    run: REDIS_HOST="192.168.64.243" REDIS_PORT=6379 bundle exec rspec

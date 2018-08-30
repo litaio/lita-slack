@@ -15,3 +15,8 @@ RSpec.configure do |config|
     mocks.verify_partial_doubles = true
   end
 end
+
+Lita.configure do |config|
+  config.redis[:host] = ENV["REDIS_HOST"]
+  config.redis[:port] = ENV["REDIS_PORT"]
+end
