@@ -47,11 +47,6 @@ module Lita
         thread_ts = try_get(target, :thread_ts)
 
         strings = messages.select { |s| s.is_a?(String) }
-        symbols = messages.select { |s| s.is_a?(Symbol) }
-
-        symbols.each do |s|
-          api.react_with_emoji(channel, s.to_s, timestamp)
-        end if timestamp
 
         if strings[0] && strings[0][0] == '…'
           thread_ts = timestamp

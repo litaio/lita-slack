@@ -9,6 +9,7 @@ module Lita
       class SlackSource < Lita::Source
         def initialize(**kwargs)
           @extensions = kwargs.delete(:extensions)
+          @extensions ||= { }
           super(**kwargs)
         end
 

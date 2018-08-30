@@ -490,6 +490,35 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
       end
     end
 
+    context "with a message to create a thread" do
+      let(:data) do
+        {
+          "type" => "_message new thread",
+          "channel" => "C2147483705",
+          "user" => "U023BECGF",
+          "text" => "Hello",
+          "ts" => "1234.5678"
+        }
+      end
+      let(:message) { instance_double('Lita::Message', command!: false, extensions: {}) }
+      let(:source) { instance_double('Lita::Source', private_message?: false) }
+      let(:user) { instance_double('Lita::User', id: 'U023BECGF') }
+      let(:room) { instance_double('Lita::Room', id: "C2147483705", name: "general") }
+      let(:extensions) do { :timestamp => nil, :attachments => nil } end
+
+      before do
+        allow(Lita::User).to receive(:find_by_id).and_return(user)
+        allow(Lita::Room).to receive(:find_by_id).and_return(room)
+        allow(Lita::Adapters::Slack::SlackSource).to receive(:new).with(
+          user: user,
+          room: room,
+          extensions: extensions
+        ).and_return(source)
+        allow(Lita::Message).to receive(:new).with(robot, "Hello", source).and_return(message)
+        allow(robot).to receive(:receive).with(message)
+      end
+    end
+
     context "with a message with an unsupported subtype" do
       let(:data) do
         {
@@ -687,6 +716,9 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
 
         subject.handle
       end
+    end
+
+    context "with a message to create a new thread" do
     end
   end
 end
