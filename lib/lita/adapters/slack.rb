@@ -133,7 +133,7 @@ module Lita
 
       def try_get(object, attribute)
         if object.respond_to? attribute
-          object.attribute
+          object.send(attribute)
         else
           nil
         end

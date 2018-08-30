@@ -3,4 +3,3 @@ name: lita-slack
 up:
   - ruby:
       version: 2.4.3
-  - railgun
