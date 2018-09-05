@@ -38,27 +38,23 @@ module Lita
         room_roster target.id, api
       end
 
-      # @param [Array] messages list of String messages or Symbol emoji reactions
+      # @param [Array] messages list of String messages
       # messages starting with the ellipsis character will start a new thread
       def send_messages(target, messages)
         api = API.new(config)
         channel = channel_for(target)
-        timestamp = try_get(target, :timestamp)
-        thread_ts = try_get(target, :thread_ts)
+        timestamp = target.timestamp if target.respond_to?(:timestamp)
+        thread_ts = target.timestamp if target.respond_to?(:timestamp)
 
-        strings = messages.select { |s| s.is_a?(String) }
-
-        if strings[0] && strings[0][0] == '…'
+        if messages[0] && messages[0][0] == '…'
           thread_ts = timestamp
-          strings[0] = strings[0][1..-1]
+          messages[0] = messages[0][1..-1]
         end
         
-        if strings.any?
-          if thread_ts
-            api.reply_in_thread(channel, strings, thread_ts)
-          else
-            api.send_messages(channel, strings)
-          end
+        if thread_ts
+          api.reply_in_thread(channel, messages, thread_ts)
+        else
+          api.send_messages(channel, messages)
         end
       end
 
@@ -123,14 +119,6 @@ module Lita
           roster.empty? ? mpim_roster(room_id, api) : roster
         when /^D/
           im_roster room_id, api
-        end
-      end
-
-      def try_get(object, attribute)
-        if object.respond_to? attribute
-          object.send(attribute)
-        else
-          nil
         end
       end
     end
