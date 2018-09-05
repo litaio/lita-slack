@@ -38,9 +38,24 @@ module Lita
         room_roster target.id, api
       end
 
-      def send_messages(target, strings)
+      # @param [Array] messages list of String messages
+      # messages starting with the ellipsis character will start a new thread
+      def send_messages(target, messages)
         api = API.new(config)
-        api.send_messages(channel_for(target), strings)
+        channel = channel_for(target)
+        timestamp = target.timestamp if target.respond_to?(:timestamp)
+        thread_ts = target.timestamp if target.respond_to?(:timestamp)
+
+        if messages[0] && messages[0][0] == '…'
+          thread_ts = timestamp
+          messages[0] = messages[0][1..-1]
+        end
+        
+        if thread_ts
+          api.reply_in_thread(channel, messages, thread_ts)
+        else
+          api.send_messages(channel, messages)
+        end
       end
 
       def set_topic(target, topic)
