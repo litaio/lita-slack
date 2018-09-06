@@ -3,6 +3,7 @@ require 'faraday'
 require 'lita/adapters/slack/team_data'
 require 'lita/adapters/slack/slack_im'
 require 'lita/adapters/slack/slack_user'
+require 'lita/adapters/slack/slack_source'
 require 'lita/adapters/slack/slack_channel'
 
 module Lita
@@ -70,6 +71,16 @@ module Lita
             as_user: true,
             channel: channel_id,
             text: messages.join("\n"),
+          )
+        end
+
+        def reply_in_thread(channel_id, messages, thread_ts)
+          call_api(
+            "chat.postMessage",
+            as_user: true,
+            channel: channel_id,
+            text: messages.join("\n"),
+            thread_ts: thread_ts
           )
         end
 

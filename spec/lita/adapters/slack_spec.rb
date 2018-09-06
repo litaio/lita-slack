@@ -117,11 +117,11 @@ describe Lita::Adapters::Slack, lita: true do
   end
 
   describe "#send_messages" do
-    let(:room_source) { Lita::Source.new(room: 'C024BE91L') }
+    let(:room_source) { Lita::Adapters::Slack::SlackSource.new(room: 'C024BE91L') }
     let(:user) { Lita::User.new('U023BECGF') }
     let(:user_source) { Lita::Source.new(user: user) }
     let(:private_message_source) do
-      Lita::Source.new(room: 'C024BE91L', user: user, private_message: true)
+      Lita::Adapters::Slack::SlackSource.new(room: 'C024BE91L', user: user, private_message: true)
     end
 
     describe "via the Web API" do
@@ -135,6 +135,48 @@ describe Lita::Adapters::Slack, lita: true do
         expect(rtm_connection).to_not receive(:send_messages)
         expect(api).to receive(:send_messages).with(room_source.room, ['foo'])
 
+        subject.send_messages(room_source, ['foo'])
+      end
+    end
+
+    describe "with an ellipsis" do
+      let(:room_source) { Lita::Adapters::Slack::SlackSource.new(room: 'C024BE91L', extensions: { timestamp: "12345" } ) }
+      let(:api) { instance_double('Lita::Adapters::Slack::API') }
+
+      before do
+        allow(Lita::Adapters::Slack::API).to receive(:new).with(subject.config).and_return(api)
+      end
+
+      it "sends a new threaded message" do
+        expect(api).to receive(:reply_in_thread).with(room_source.room, ['foo'], "12345")
+        subject.send_messages(room_source, ['…foo'])
+      end
+    end
+
+    describe "sends to the main channel without a thread_ts" do
+      let(:room_source) { Lita::Adapters::Slack::SlackSource.new(room: 'C024BE91L', extensions: { timestamp: "12345" } ) }
+      let(:api) { instance_double('Lita::Adapters::Slack::API') }
+
+      before do
+        allow(Lita::Adapters::Slack::API).to receive(:new).with(subject.config).and_return(api)
+      end
+
+      it "sends a non-threaded message" do
+        expect(api).to receive(:send_messages).with(room_source.room, ['foo'])
+        subject.send_messages(room_source, ['foo'])
+      end
+    end
+
+    describe "sends to a thread with a thread_ts" do
+      let(:room_source) { Lita::Adapters::Slack::SlackSource.new(room: 'C024BE91L', extensions: { timestamp: "12345", thread_ts: "123456" } ) }
+      let(:api) { instance_double('Lita::Adapters::Slack::API') }
+
+      before do
+        allow(Lita::Adapters::Slack::API).to receive(:new).with(subject.config).and_return(api)
+      end
+
+      it "sends a non-threaded message" do
+        expect(api).to receive(:reply_in_thread).with(room_source.room, ['foo'], "123456")
         subject.send_messages(room_source, ['foo'])
       end
     end
