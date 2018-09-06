@@ -44,7 +44,7 @@ module Lita
         api = API.new(config)
         channel = channel_for(target)
         timestamp = target.timestamp if target.respond_to?(:timestamp)
-        thread_ts = target.timestamp if target.respond_to?(:timestamp)
+        thread_ts = target.timestamp if target.respond_to?(:thread_ts)
 
         if messages[0] && messages[0][0] == '…'
           thread_ts = timestamp
