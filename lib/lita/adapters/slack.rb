@@ -43,8 +43,9 @@ module Lita
       def send_messages(target, messages)
         api = API.new(config)
         channel = channel_for(target)
+
         timestamp = target.timestamp if target.respond_to?(:timestamp)
-        thread_ts = target.timestamp if target.respond_to?(:thread_ts)
+        thread_ts = target.thread_ts if target.respond_to?(:thread_ts)
 
         if messages[0] && messages[0][0] == '…'
           thread_ts = timestamp
