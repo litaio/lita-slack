@@ -1,0 +1,14 @@
+# https://dev-accel.shopify.io/dev/railgun/Railgun-Config
+name: lita-slack
+
+vm:
+  image: /opt/dev/misc/railgun-images/default
+  ip_address: 192.168.64.243
+  memory: 2G
+  cores: 2
+
+volumes:
+  root: 512M
+
+services:
+  - redis
