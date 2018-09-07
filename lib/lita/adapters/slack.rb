@@ -24,11 +24,11 @@ module Lita
       end
 
       # Starts the connection.
-      def run
+      def run(&block)
         return if rtm_connection
 
         @rtm_connection = RTMConnection.build(robot, config)
-        rtm_connection.run
+        rtm_connection.run(&block)
       end
 
       # Returns UID(s) in an Array or String for:
