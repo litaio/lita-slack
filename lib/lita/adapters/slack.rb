@@ -24,11 +24,11 @@ module Lita
       end
 
       # Starts the connection.
-      def run
+      def run(&block)
         return if rtm_connection
 
         @rtm_connection = RTMConnection.build(robot, config)
-        rtm_connection.run
+        rtm_connection.run(&block)
       end
 
       # Returns UID(s) in an Array or String for:
@@ -38,9 +38,25 @@ module Lita
         room_roster target.id, api
       end
 
-      def send_messages(target, strings)
+      # @param [Array] messages list of String messages
+      # messages starting with the ellipsis character will start a new thread
+      def send_messages(target, messages)
         api = API.new(config)
-        api.send_messages(channel_for(target), strings)
+        channel = channel_for(target)
+
+        timestamp = target.timestamp if target.respond_to?(:timestamp)
+        thread_ts = target.thread_ts if target.respond_to?(:thread_ts)
+
+        if messages[0] && messages[0][0] == '…'
+          thread_ts = timestamp
+          messages[0] = messages[0][1..-1]
+        end
+
+        if thread_ts
+          api.reply_in_thread(channel, messages, thread_ts)
+        else
+          api.send_messages(channel, messages)
+        end
       end
 
       def set_topic(target, topic)
@@ -61,11 +77,7 @@ module Lita
       attr_reader :rtm_connection
 
       def channel_for(target)
-        if target.private_message?
-          rtm_connection.im_for(target.user.id)
-        else
-          target.room
-        end
+        target.room
       end
 
       def channel_roster(room_id, api)

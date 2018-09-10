@@ -3,6 +3,7 @@ require 'faraday'
 require 'lita/adapters/slack/team_data'
 require 'lita/adapters/slack/slack_im'
 require 'lita/adapters/slack/slack_user'
+require 'lita/adapters/slack/slack_source'
 require 'lita/adapters/slack/slack_channel'
 
 module Lita
@@ -55,6 +56,14 @@ module Lita
           )
         end
 
+        def open_dialog(dialog, trigger_id)
+          call_api(
+            "dialog.open",
+            dialog: MultiJson.dump(dialog),
+            trigger_id: trigger_id,
+          )
+        end
+
         def send_messages(channel_id, messages)
           call_api(
             "chat.postMessage",
@@ -62,6 +71,29 @@ module Lita
             as_user: true,
             channel: channel_id,
             text: messages.join("\n"),
+          )
+        end
+
+        def reply_in_thread(channel_id, messages, thread_ts)
+          call_api(
+            "chat.postMessage",
+            as_user: true,
+            channel: channel_id,
+            text: messages.join("\n"),
+            thread_ts: thread_ts
+          )
+        end
+
+        def delete(channel, ts)
+          call_api("chat.delete", channel: channel, ts: ts)
+        end
+
+        def update_attachments(channel, ts, attachments)
+          call_api(
+            "chat.update",
+            channel: channel,
+            ts: ts,
+            attachments: MultiJson.dump(attachments.map(&:to_hash))
           )
         end
 
