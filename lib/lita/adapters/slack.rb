@@ -51,7 +51,7 @@ module Lita
           thread_ts = timestamp
           messages[0] = messages[0][1..-1]
         end
-
+        
         if thread_ts
           api.reply_in_thread(channel, messages, thread_ts)
         else
@@ -77,7 +77,11 @@ module Lita
       attr_reader :rtm_connection
 
       def channel_for(target)
-        target.room
+        if target.private_message?
+          rtm_connection.im_for(target.user.id)
+        else
+          target.room
+        end
       end
 
       def channel_roster(room_id, api)
