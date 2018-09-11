@@ -47,7 +47,6 @@ module Lita
 
             websocket.on(:open) do
               log.debug("Connected to the Slack Real Time Messaging API.")
-              yield if block_given?
             end
             websocket.on(:message) { |event| receive_message(event) }
             websocket.on(:close) do |event|
