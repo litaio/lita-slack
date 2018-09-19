@@ -28,7 +28,9 @@ module Lita
         return if rtm_connection
 
         @rtm_connection = RTMConnection.build(robot, config)
-        rtm_connection.run(&block)
+
+        yield if block_given?
+        rtm_connection.run
       end
 
       # Returns UID(s) in an Array or String for:
@@ -51,7 +53,7 @@ module Lita
           thread_ts = timestamp
           messages[0] = messages[0][1..-1]
         end
-        
+
         if thread_ts
           api.reply_in_thread(channel, messages, thread_ts)
         else
