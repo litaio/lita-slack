@@ -46,10 +46,27 @@ module Lita
          normalized_message = remove_formatting(normalized_message) unless normalized_message.nil?
 
           attachment_text = Array(data["attachments"]).map do |attachment|
-            attachment["text"] || attachment["fallback"]
+            if attachment['actions']
+              parse_attachment_with_buttons(attachment)
+            else
+              attachment["text"] || attachment["fallback"]
+            end
+
           end
 
           ([normalized_message] + attachment_text).compact.join("\n")
+        end
+
+        # https://api.slack.com/docs/message-buttons
+        def parse_attachment_with_buttons(attachment)
+          lines = []
+          lines << attachment["text"]
+          Array(attachment["actions"]).map do |field|
+            lines << field["name"]
+            lines << field["text"]
+            lines << field["value"]
+          end
+          lines.compact.map(&:strip).reject(&:empty?)
         end
 
         def remove_formatting(message)

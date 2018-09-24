@@ -136,6 +136,59 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
         end
       end
 
+      context "when the message has attachments with actions" do
+        let(:button_1) do
+          {
+            "id"=>"1",
+            "name"=>"game",
+            "text"=>"Chess",
+            "type"=>"button",
+            "value"=> "chess",
+            "style"=>""
+          }
+        end
+
+        let(:button_2) do
+          {
+            "id"=>"2",
+            "name"=>"game",
+            "text"=>"Falken's Maze",
+            "type"=>"button",
+            "value"=> "maze",
+            "style"=>""
+          }
+        end
+
+        let(:data) do
+          {
+            "type" => "message",
+            "channel" => "C2147483705",
+            "user" => "U023BECGF",
+            "text" => "Would you like to play a game?",
+            "attachments" => [
+              {
+                "callback_id"=>"wopr_game",
+                "text"=>"Choose a game to play",
+                "id"=>1,
+                "color"=>"#3AA3E3",
+                "actions"=> [button_1, button_2],
+                "fallback"=>"You are unable to choose a game"
+              }
+            ]
+          }
+        end
+
+        it "recives attachment text with the buttons information" do
+          expect(Lita::Message).to receive(:new).with(
+            robot,
+            "Would you like to play a game?\nChoose a game to play\ngame\nChess\nchess\ngame\nFalken's Maze\nmaze",
+            source
+          ).and_return(message)
+
+          subject.handle
+        end
+      end
+
       context "when the message is nil" do
         let(:data) do
           {
