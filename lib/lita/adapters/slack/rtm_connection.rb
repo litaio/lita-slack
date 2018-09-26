@@ -17,19 +17,22 @@ module Lita
 
         class << self
           def build(robot, config)
-            new(robot, config, API.new(config).rtm_start)
+            team_data = API.new(config).rtm_start
+            new(robot, config, team_data)
           end
         end
 
         def initialize(robot, config, team_data)
           @robot = robot
           @config = config
+          Lita.logger.debug("Before IMMapping")
           @im_mapping = IMMapping.new(API.new(config), team_data.ims)
+          Lita.logger.debug("After IMMapping")
           @websocket_url = team_data.websocket_url
           @robot_id = team_data.self.id
 
-          UserCreator.create_users(team_data.users, robot, robot_id)
-          RoomCreator.create_rooms(team_data.channels, robot)
+          @slack_users = team_data.users
+          @slack_channels = team_data.channels
         end
 
         def im_for(user_id)
@@ -45,10 +48,20 @@ module Lita
               websocket_options.merge(options)
             )
 
-            websocket.on(:open) { log.debug("Connected to the Slack Real Time Messaging API.") }
+            websocket.on(:open) do
+              log.debug("Connected to the Slack Real Time Messaging API.")
+              log.debug("Inserting #{slack_users.size} users")
+              UserCreator.create_users(slack_users, robot, robot_id)
+              log.debug("Inserting #{slack_channels.size} channels")
+              RoomCreator.create_rooms(slack_channels, robot)
+              log.debug("Done inserting channels.")
+              yield if block_given?
+            end
             websocket.on(:message) { |event| receive_message(event) }
-            websocket.on(:close) do
+            websocket.on(:close) do |event|
               log.info("Disconnected from Slack.")
+              log.info(event.code)
+              log.info(event.reason)
               EventLoop.safe_stop
             end
             websocket.on(:error) { |event| log.debug("WebSocket error: #{event.message}") }
@@ -80,6 +93,8 @@ module Lita
         attr_reader :robot_id
         attr_reader :websocket
         attr_reader :websocket_url
+        attr_reader :slack_users
+        attr_reader :slack_channels
 
         def log
           Lita.logger
