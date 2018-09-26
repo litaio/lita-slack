@@ -24,12 +24,16 @@ module Lita
         def initialize(robot, config, team_data)
           @robot = robot
           @config = config
+          Lita.logger.debug("Before IMMapping")
           @im_mapping = IMMapping.new(API.new(config), team_data.ims)
+          Lita.logger.debug("After IMMapping")
           @websocket_url = team_data.websocket_url
           @robot_id = team_data.self.id
-
+          Lita.logger.debug("Start UserCreator")
           UserCreator.create_users(team_data.users, robot, robot_id)
+          Lita.logger.debug("Starting RoomCreator")
           RoomCreator.create_rooms(team_data.channels, robot)
+          Lita.logger.debug("Finished RoomCreator")
         end
 
         def im_for(user_id)

@@ -102,9 +102,10 @@ module Lita
         end
 
         def rtm_start
+          Lita.logger.debug("Starting `rtm_start` method")
           response_data = call_api("rtm.start")
-
-          TeamData.new(
+          Lita.logger.debug("Started building TeamData")
+          team_data = TeamData.new(
             SlackIM.from_data_array(response_data["ims"]),
             SlackUser.from_data(response_data["self"]),
             SlackUser.from_data_array(response_data["users"]),
@@ -112,6 +113,9 @@ module Lita
               SlackChannel.from_data_array(response_data["groups"]),
             response_data["url"],
           )
+          Lita.logger.debug("Finished building TeamData")
+          Lita.logger.debug("Finishing method `rtm_start`")
+          team_data
         end
 
         private
@@ -121,13 +125,14 @@ module Lita
         attr_reader :post_message_config
 
         def call_api(method, post_data = {})
+          Lita.logger.debug("Starting request to Slack API with rtm.start")
           response = connection.post(
             "https://slack.com/api/#{method}",
             { token: config.token }.merge(post_data)
           )
-
+          Lita.logger.debug("Finished request to Slack API rtm.start")
           data = parse_response(response, method)
-
+          Lita.logger.debug("Finished parsing rtm.start response")
           raise "Slack API call to #{method} returned an error: #{data["error"]}." if data["error"]
 
           data
