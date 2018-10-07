@@ -18,8 +18,10 @@ module Lita
             handle_message
           when "reaction_added", "reaction_removed"
             handle_reaction
-          when "user_change", "team_join"
+          when "user_change"
             handle_user_change
+          when "team_join"
+            handle_team_join
           when "bot_added", "bot_changed"
             handle_bot_change
           when "channel_created", "channel_rename", "group_rename"
@@ -188,6 +190,15 @@ module Lita
         def handle_user_change
           log.debug("Updating user data.")
           UserCreator.create_user(SlackUser.from_data(data["user"]), robot, robot_id)
+        end
+
+        def handle_team_join
+          log.debug("Updating user data. New user joined slack")
+
+          slack_user = SlackUser.from_data(data["user"])
+
+          UserCreator.create_user(slack_user, robot, robot_id)
+          robot.trigger(:slack_team_joined, slack_user: slack_user)
         end
 
         def log
