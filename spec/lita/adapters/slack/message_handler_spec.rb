@@ -507,7 +507,6 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
     end
 
     context "with a team join message" do
-      # let(:bobby) { Lita::Adapters::Slack::SlackUser.new('U023BECGF', 'bobby', real_name) }
       let(:data) do
         {
           "type" => "team_join",
@@ -524,6 +523,24 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
           Lita::Adapters::Slack::UserCreator
         ).to receive(:create_user) do |slack_user, robot, robot_id|
           expect(slack_user.name).to eq("bobby")
+        end
+
+        subject.handle
+      end
+
+      it "triggers an event" do
+        user_id   = data["user"]["id"]
+        name      = data["user"]["name"]
+        real_name = data["user"]["real_name"]
+
+        bobby = Lita::Adapters::Slack::SlackUser.new(user_id, name, real_name, data["user"])
+
+        expect(
+          Lita::Adapters::Slack::UserCreator
+        ).to receive(:create_user).and_return(bobby)
+
+        expect(robot).to receive(:trigger).with(:slack_team_joined, slack_user: Lita::Adapters::Slack::SlackUser) do |event, args|
+          expect(args[:slack_user].metadata).to eq(bobby.metadata)
         end
 
         subject.handle
