@@ -28,10 +28,9 @@ module Lita
         return if rtm_connection
         Lita.logger.debug("Starting to build RTM connection")
         @rtm_connection = RTMConnection.build(robot, config)
+
         Lita.logger.debug("Done building RTM connection")
-        yield if block_given?
-        Lita.logger.debug("Done yielding block & will start running the rtm connection")
-        rtm_connection.run
+        rtm_connection.run(&block)
       end
 
       # Returns UID(s) in an Array or String for:
