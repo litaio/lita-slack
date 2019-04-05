@@ -579,6 +579,124 @@ describe Lita::Adapters::Slack::API do
     end
   end
 
+  describe "#send_ephemeral_attachments" do
+    let(:attachment) do
+      Lita::Adapters::Slack::Attachment.new(attachment_text)
+    end
+    let(:attachment_text) { "attachment text" }
+    let(:attachment_hash) do
+      {
+          fallback: fallback_text,
+          text: attachment_text,
+      }
+    end
+    let(:fallback_text) { attachment_text }
+    let(:http_response) { MultiJson.dump({ ok: true }) }
+    let(:room) { Lita::Room.new("C1234567890") }
+    let(:user) { Lita::User.new('U023BECGF') }
+    let(:stubs) do
+      Faraday::Adapter::Test::Stubs.new do |stub|
+        stub.post(
+            "https://slack.com/api/chat.postEphemeral",
+            token: token,
+            as_user: true,
+            user: user.id,
+            channel: room.id,
+            attachments: MultiJson.dump([attachment_hash]),
+            ) do
+          [http_status, {}, http_response]
+        end
+      end
+    end
+
+    context "with a simple text attachment" do
+      it "sends the attachment" do
+        response = subject.send_ephemeral_attachments(room, user,[attachment])
+
+        expect(response['ok']).to be(true)
+      end
+    end
+
+    context "with a Slack error" do
+      let(:http_response) do
+        MultiJson.dump({
+                           ok: false,
+                           error: 'invalid_auth'
+                       })
+      end
+
+      it "raises a RuntimeError" do
+        expect { subject.send_ephemeral_attachments(room, user,[attachment]) }.to raise_error(
+                                                                                      "Slack API call to chat.postEphemeral returned an error: invalid_auth."
+                                                                                  )
+      end
+    end
+
+    context "with an HTTP error" do
+      let(:http_status) { 422 }
+      let(:http_response) { '' }
+
+      it "raises a RuntimeError" do
+        expect { subject.send_ephemeral_attachments(room, user,[attachment]) }.to raise_error(
+                                                                                      "Slack API call to chat.postEphemeral failed with status code 422: ''. Headers: {}"
+                                                                                  )
+      end
+    end
+  end
+
+  describe "#send_ephemeral_messages" do
+    let(:messages) { ["foo", "bar"] }
+    let(:http_response) { MultiJson.dump({ ok: true }) }
+    let(:room) { Lita::Room.new("C1234567890") }
+    let(:user) { Lita::User.new('U023BECGF') }
+    let(:stubs) do
+      Faraday::Adapter::Test::Stubs.new do |stub|
+        stub.post(
+            "https://slack.com/api/chat.postEphemeral",
+            token: token,
+            as_user: true,
+            channel: room.id,
+            user: user.id,
+            text: messages.join("\n"),
+            ) do
+          [http_status, {}, http_response]
+        end
+      end
+    end
+
+    it "sends the ephemeral message" do
+      response = subject.send_ephemeral_messages(room, user, messages)
+
+      expect(response['ok']).to be(true)
+    end
+
+    context "with a Slack error" do
+      let(:http_response) do
+        MultiJson.dump({
+                           ok: false,
+                           error: 'invalid_auth'
+                       })
+      end
+
+      it "raises a RuntimeError" do
+        expect { subject.send_ephemeral_messages(room, user, messages) }.to raise_error(
+                                                                                "Slack API call to chat.postEphemeral returned an error: invalid_auth."
+                                                                            )
+      end
+    end
+
+    context "with an HTTP error" do
+      let(:http_status) { 422 }
+      let(:http_response) { '' }
+
+      it "raises a RuntimeError" do
+        expect { subject.send_ephemeral_messages(room, user, messages) }.to raise_error(
+                                                                                "Slack API call to chat.postEphemeral failed with status code 422: ''. Headers: {}"
+                                                                            )
+      end
+    end
+  end
+
   describe "#reply_in_thread" do
     let(:messages) { ["attachment text"] }
     let(:http_response) { MultiJson.dump({ ok: true }) }

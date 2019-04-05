@@ -24,6 +24,26 @@ module Lita
         end
         alias_method :send_attachment, :send_attachments
 
+        # @param target [Lita::Room, Lita::User] A room or user object indicating where the
+        #   attachment should be sent.
+        # @param user Lita::User A user object indicating whom should receive the ephemeral message.
+        # @param attachments [Attachment, Array<Attachment>] An {Attachment} or array of {Attachment}s to send.
+        # @return [void]
+        def send_ephemeral_attachments(target, user, attachments)
+          api.send_ephemeral_attachments(target, user, Array(attachments))
+        end
+        alias_method :send_ephemeral_attachment, :send_ephemeral_attachments
+
+        # @param target [Lita::Room, Lita::User] A room or user object indicating where the
+        #   attachment should be sent.
+        # @param user Lita::User A user object indicating whom should receive the ephemeral message.
+        # @param messages [String, Array<String>] A {String} or array of {String}s to send.
+        # @return [void]
+        def send_ephemeral_messages(target, user, messages)
+          api.send_ephemeral_messages(target, user, Array(messages))
+        end
+        alias_method :send_ephemeral_message, :send_ephemeral_messages
+
         # @param dialog The dialog to be shown to the user
         # @param trigger_id The trigger id of a slash command request URL or interactive message
         # @return [void]

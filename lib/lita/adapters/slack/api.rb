@@ -74,6 +74,27 @@ module Lita
           )
         end
 
+        def send_ephemeral_attachments(room_or_user, user, attachments)
+          call_api(
+              "chat.postEphemeral",
+              as_user: true,
+              channel: room_or_user.id,
+              user: user.id,
+              attachments: MultiJson.dump(attachments.map(&:to_hash)),
+              )
+        end
+
+        def send_ephemeral_messages(room_or_user, user, messages)
+          call_api(
+              "chat.postEphemeral",
+              **post_message_config,
+              as_user: true,
+              channel: room_or_user.id,
+              user: user.id,
+              text: messages.join("\n"),
+              )
+        end
+
         def reply_in_thread(channel_id, messages, thread_ts)
           call_api(
             "chat.postMessage",
