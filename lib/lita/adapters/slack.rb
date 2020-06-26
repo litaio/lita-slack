@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'lita/adapters/slack/chat_service'
 require 'lita/adapters/slack/rtm_connection'
 
@@ -28,7 +30,9 @@ module Lita
         return if rtm_connection
 
         @rtm_connection = RTMConnection.build(robot, config)
+        log.debug('[slack lita run] doing rtm_connection.run...')
         rtm_connection.run
+        log.debug('[slack lita run] done rtm_connection.run... We never reach this..?')
       end
 
       # Returns UID(s) in an Array or String for:

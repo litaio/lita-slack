@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'faye/websocket'
 require 'multi_json'
 
@@ -17,19 +19,13 @@ module Lita
 
         class << self
           def build(robot, config)
-            new(robot, config, API.new(config).rtm_start)
+            new(robot, config)
           end
         end
 
-        def initialize(robot, config, team_data)
+        def initialize(robot, config)
           @robot = robot
           @config = config
-          @im_mapping = IMMapping.new(API.new(config), team_data.ims)
-          @websocket_url = team_data.websocket_url
-          @robot_id = team_data.self.id
-
-          UserCreator.create_users(team_data.users, robot, robot_id)
-          RoomCreator.create_rooms(team_data.channels, robot)
         end
 
         def im_for(user_id)
@@ -38,26 +34,39 @@ module Lita
 
         def run(queue = nil, options = {})
           EventLoop.run do
-            log.debug("Connecting to the Slack Real Time Messaging API.")
+            log.debug('[slack rtm run] doing rtm_start...')
+            team_data = API.new(config).rtm_start
+
+            log.debug('[slack rtm run] creating IMMapping...')
+            @im_mapping = IMMapping.new(API.new(config), team_data.ims)
+            @websocket_url = team_data.websocket_url
+            @robot_id = team_data.self.id
+
+            UserCreator.create_users(team_data.users, robot, robot_id)
+            RoomCreator.create_rooms(team_data.channels, robot)
+
+            log.debug('[slack rtm run] opening websocket...')
+
             @websocket = Faye::WebSocket::Client.new(
               websocket_url,
               nil,
               websocket_options.merge(options)
             )
 
-            websocket.on(:open) { log.debug("Connected to the Slack Real Time Messaging API.") }
+            websocket.on(:open) { log.debug('[slack rtm run] websocket connection opened!') }
             websocket.on(:message) { |event| receive_message(event) }
             websocket.on(:close) do
-              log.info("Disconnected from Slack.")
+              log.info('[slack rtm run] websocket connection closed!')
               EventLoop.safe_stop
             end
-            websocket.on(:error) { |event| log.debug("WebSocket error: #{event.message}") }
+            websocket.on(:error) { |event| log.debug("[slack rtm run] websocket error: #{event.message}") }
 
             queue << websocket if queue
           end
         end
 
         def send_messages(channel, strings)
+          log.debug('xtra - send_messages')
           strings.each do |string|
             EventLoop.defer { websocket.send(safe_payload_for(channel, string)) }
           end
@@ -65,7 +74,7 @@ module Lita
 
         def shut_down
           if websocket && EventLoop.running?
-            log.debug("Closing connection to the Slack Real Time Messaging API.")
+            log.debug('Closing connection to the Slack Real Time Messaging API.')
             websocket.close
           end
 
@@ -86,36 +95,35 @@ module Lita
         end
 
         def payload_for(channel, string)
-          MultiJson.dump({
+          log.debug('xtra - payload_for')
+          MultiJson.dump(
             id: 1,
             type: 'message',
             text: string,
             channel: channel
-          })
+          )
         end
 
         def receive_message(event)
           data = MultiJson.load(event.data)
-
+          log.debug('xtra - receive_message')
           EventLoop.defer { MessageHandler.new(robot, robot_id, data).handle }
         end
 
         def safe_payload_for(channel, string)
           payload = payload_for(channel, string)
-
-          if payload.size > MAX_MESSAGE_BYTES
-            raise ArgumentError, "Cannot send payload greater than #{MAX_MESSAGE_BYTES} bytes."
-          end
+          log.debug('xtra - safe_payload_for')
+          raise ArgumentError, "Cannot send payload greater than #{MAX_MESSAGE_BYTES} bytes." if payload.size > MAX_MESSAGE_BYTES
 
           payload
         end
 
         def websocket_options
+          log.debug('xtra - websocket_options')
           options = { ping: 10 }
-          options[:proxy] = { :origin => config.proxy } if config.proxy
+          options[:proxy] = { origin: config.proxy } if config.proxy
           options
         end
-
       end
     end
   end
