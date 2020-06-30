@@ -33,6 +33,7 @@ module Lita
         end
 
         def run(queue = nil, options = {})
+          log.debug('[slack lita run] Start of rtm_connection.run...')
           EventLoop.run do
             log.debug('[slack rtm run] doing rtm_start...')
             team_data = API.new(config).rtm_start
@@ -62,7 +63,10 @@ module Lita
             websocket.on(:error) { |event| log.debug("[slack rtm run] websocket error: #{event.message}") }
 
             queue << websocket if queue
+            log.debug('[slack rtm run] Websocket initialised...')
+            log.debug('[slack rtm run] EventMachine ready...')
           end
+          log.debug('[slack lita run] End of rtm_connection.run...')
         end
 
         def send_messages(channel, strings)
@@ -108,6 +112,16 @@ module Lita
           data = MultiJson.load(event.data)
           log.debug('xtra - receive_message')
           EventLoop.defer { MessageHandler.new(robot, robot_id, data).handle }
+        end
+
+        # return if goodbye?(data)
+        def goodbye?(data)
+          type = data['type']
+          if type == 'goodbye'
+            log.debug('xtra - receive_message - type goodbye')
+            @reconnect = true
+          end
+          @reconnect
         end
 
         def safe_payload_for(channel, string)
