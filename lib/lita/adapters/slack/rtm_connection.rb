@@ -34,37 +34,42 @@ module Lita
 
         def run(queue = nil, options = {})
           log.debug('[slack lita run] Start of rtm_connection.run...')
-          EventLoop.run do
-            log.debug('[slack rtm run] doing rtm_start...')
-            team_data = API.new(config).rtm_start
+          loop do 
+            @reconnect = false
+            EventLoop.run do
+              log.debug('[slack rtm run] doing rtm_start...')
+              team_data = API.new(config).rtm_start
 
-            log.debug('[slack rtm run] creating IMMapping...')
-            @im_mapping = IMMapping.new(API.new(config), team_data.ims)
-            @websocket_url = team_data.websocket_url
-            @robot_id = team_data.self.id
+              log.debug('[slack rtm run] creating IMMapping...')
+              @im_mapping = IMMapping.new(API.new(config), team_data.ims)
+              @websocket_url = team_data.websocket_url
+              @robot_id = team_data.self.id
 
-            UserCreator.create_users(team_data.users, robot, robot_id)
-            RoomCreator.create_rooms(team_data.channels, robot)
+              UserCreator.create_users(team_data.users, robot, robot_id)
+              RoomCreator.create_rooms(team_data.channels, robot)
 
-            log.debug('[slack rtm run] opening websocket...')
+              log.debug('[slack rtm run] opening websocket...')
 
-            @websocket = Faye::WebSocket::Client.new(
-              websocket_url,
-              nil,
-              websocket_options.merge(options)
-            )
+              @websocket = Faye::WebSocket::Client.new(
+                websocket_url,
+                nil,
+                websocket_options.merge(options)
+              )
 
-            websocket.on(:open) { log.debug('[slack rtm run] websocket connection opened!') }
-            websocket.on(:message) { |event| receive_message(event) }
-            websocket.on(:close) do
-              log.info('[slack rtm run] websocket connection closed!')
-              EventLoop.safe_stop
+              websocket.on(:open) { log.debug('[slack rtm run] websocket connection opened!') }
+              websocket.on(:message) { |event| receive_message(event) }
+              websocket.on(:close) do
+                log.info('[slack rtm run] websocket connection closed!')
+                EventLoop.safe_stop
+              end
+              websocket.on(:error) { |event| log.debug("[slack rtm run] websocket error: #{event.message}") }
+
+              queue << websocket if queue
+              log.debug('[slack rtm run] Websocket initialised && EventMachine ready...')
             end
-            websocket.on(:error) { |event| log.debug("[slack rtm run] websocket error: #{event.message}") }
+            break unless @reconnect
 
-            queue << websocket if queue
-            log.debug('[slack rtm run] Websocket initialised...')
-            log.debug('[slack rtm run] EventMachine ready...')
+            log.debug('Slack reconnect requested!')
           end
           log.debug('[slack lita run] End of rtm_connection.run...')
         end
@@ -111,15 +116,25 @@ module Lita
         def receive_message(event)
           data = MultiJson.load(event.data)
           log.debug('xtra - receive_message')
+          return if reconnect?(data) || goodbye?(data)
+
           EventLoop.defer { MessageHandler.new(robot, robot_id, data).handle }
         end
 
-        # return if goodbye?(data)
+        def reconnect?(data)
+          if data['type'] == 'message' && data['text'] == 'reconnect'
+            log.debug('xtra - receive_message - message "reconnect"')
+            @reconnect = true
+            EventLoop.safe_stop
+          end
+          @reconnect
+        end
+
         def goodbye?(data)
-          type = data['type']
-          if type == 'goodbye'
+          if data['type'] == 'goodbye'
             log.debug('xtra - receive_message - type goodbye')
             @reconnect = true
+            EventLoop.safe_stop
           end
           @reconnect
         end
