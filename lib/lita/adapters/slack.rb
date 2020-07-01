@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'lita/adapters/slack/chat_service'
 require 'lita/adapters/slack/rtm_connection'
 

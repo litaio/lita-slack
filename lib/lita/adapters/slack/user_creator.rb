@@ -5,6 +5,7 @@ module Lita
       class UserCreator
         class << self
           def create_user(slack_user, robot, robot_id)
+            log.debug("xtra - create_user : #{real_name(slack_user)} : #{slack_user.name}")
             User.create(
               slack_user.id,
               name: real_name(slack_user),
@@ -16,6 +17,7 @@ module Lita
           end
 
           def create_users(slack_users, robot, robot_id)
+            log.debug('xtra - create_users')
             slack_users.each { |slack_user| create_user(slack_user, robot, robot_id) }
           end
 
@@ -28,6 +30,10 @@ module Lita
           def update_robot(robot, slack_user)
             robot.name = slack_user.real_name
             robot.mention_name = slack_user.name
+          end
+
+          def log
+            Lita.logger
           end
         end
       end
