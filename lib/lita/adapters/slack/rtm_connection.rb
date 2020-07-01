@@ -125,7 +125,7 @@ module Lita
           if data['type'] == 'message' && data['text'] == 'reconnect'
             log.debug('xtra - receive_message - message "reconnect"')
             @reconnect = true
-            EventLoop.safe_stop
+            shut_down
           end
           @reconnect
         end
@@ -134,7 +134,7 @@ module Lita
           if data['type'] == 'goodbye'
             log.debug('xtra - receive_message - type goodbye')
             @reconnect = true
-            EventLoop.safe_stop
+            shut_down
           end
           @reconnect
         end
