@@ -36,7 +36,7 @@ module Lita
           @id = id
           @name = name
           @real_name = real_name.to_s
-          @email = metadata['email'].to_s
+          @email = metadata['profile'] && metadata['profile']['email'].to_s
           @metadata = metadata
         end
 
