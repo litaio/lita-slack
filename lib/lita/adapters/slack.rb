@@ -1,5 +1,5 @@
-require 'lita/adapters/slack/chat_service'
-require 'lita/adapters/slack/rtm_connection'
+require_relative 'slack/chat_service'
+require_relative 'slack/rtm_connection'
 
 module Lita
   module Adapters

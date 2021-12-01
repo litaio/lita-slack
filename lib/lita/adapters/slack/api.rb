@@ -1,9 +1,9 @@
 require 'faraday'
 
-require 'lita/adapters/slack/team_data'
-require 'lita/adapters/slack/slack_im'
-require 'lita/adapters/slack/slack_user'
-require 'lita/adapters/slack/slack_channel'
+require_relative 'team_data'
+require_relative 'slack_im'
+require_relative 'slack_user'
+require_relative 'slack_channel'
 
 module Lita
   module Adapters
