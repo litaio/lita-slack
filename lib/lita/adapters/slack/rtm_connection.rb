@@ -17,19 +17,15 @@ module Lita
 
         class << self
           def build(robot, config)
-            new(robot, config, API.new(config).rtm_start)
+            new(robot, config, API.new(config).rtm_connect)
           end
         end
 
         def initialize(robot, config, team_data)
           @robot = robot
           @config = config
-          @im_mapping = IMMapping.new(API.new(config), team_data.ims)
           @websocket_url = team_data.websocket_url
           @robot_id = team_data.self.id
-
-          UserCreator.create_users(team_data.users, robot, robot_id)
-          RoomCreator.create_rooms(team_data.channels, robot)
         end
 
         def im_for(user_id)
