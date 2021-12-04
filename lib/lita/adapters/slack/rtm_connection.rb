@@ -28,10 +28,6 @@ module Lita
           @robot_id = team_data.self.id
         end
 
-        def im_for(user_id)
-          im_mapping.im_for(user_id)
-        end
-
         def run(queue = nil, options = {})
           EventLoop.run do
             log.debug("Connecting to the Slack Real Time Messaging API.")

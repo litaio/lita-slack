@@ -637,11 +637,11 @@ describe Lita::Adapters::Slack::API do
     end
   end
 
-  describe "#rtm_start" do
+  describe "#rtm_connect" do
     let(:http_status) { 200 }
     let(:stubs) do
       Faraday::Adapter::Test::Stubs.new do |stub|
-        stub.post('https://slack.com/api/rtm.start', token: token) do
+        stub.post('https://slack.com/api/rtm.connect', token: token) do
           [http_status, {}, http_response]
         end
       end
@@ -652,11 +652,8 @@ describe Lita::Adapters::Slack::API do
         MultiJson.dump({
           ok: true,
           url: 'wss://example.com/',
-          users: [{ id: 'U023BECGF' }],
-          ims: [{ id: 'D024BFF1M' }],
           self: { id: 'U12345678' },
-          channels: [{ id: 'C1234567890' }],
-          groups: [{ id: 'G0987654321' }],
+          team: { id: 'T0987654321' },
         })
       end
 
@@ -664,18 +661,6 @@ describe Lita::Adapters::Slack::API do
         response = subject.rtm_connect
 
         expect(response.self.id).to eq('U12345678')
-      end
-
-      it "has an array of IMs" do
-        response = subject.rtm_connect
-
-        expect(response.ims[0].id).to eq('D024BFF1M')
-      end
-
-      it "has an array of users" do
-        response = subject.rtm_connect
-
-        expect(response.users[0].id).to eq('U023BECGF')
       end
 
       it "has a WebSocket URL" do

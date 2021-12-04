@@ -9,21 +9,18 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
     thread.join
   end
 
-  subject { described_class.new(robot, config, rtm_start_response) }
+  subject { described_class.new(robot, config, rtm_connect_response) }
 
   let(:api) { instance_double("Lita::Adapters::Slack::API") }
   let(:registry) { Lita::Registry.new }
   let(:robot) { Lita::Robot.new(registry) }
-  let(:raw_user_data) { Hash.new }
-  let(:channel) { Lita::Adapters::Slack::SlackChannel.new('C2147483705', 'general', 1360782804, 'U023BECGF', metadata) }
-  let(:metadata) { Hash.new }
 
-  let(:rtm_start_response) do
+  let(:rtm_connect_response) do
     Lita::Adapters::Slack::TeamData.new(
-      [],
-      Lita::Adapters::Slack::SlackUser.new('U12345678', 'carl', nil, raw_user_data),
-      [Lita::Adapters::Slack::SlackUser.new('U12345678', 'carl', '', raw_user_data)],
-      [channel],
+      'T2U81E2FP',
+      'SlackDemo',
+      'slackdemo',
+      Lita::Adapters::Slack::SlackUser.new('U12345678', 'carl', nil, {}),
       "wss://example.com/"
     )
   end
@@ -39,41 +36,11 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
   describe ".build" do
     before do
       allow(Lita::Adapters::Slack::API).to receive(:new).with(config).and_return(api)
-      allow(api).to receive(:rtm_connect).and_return(rtm_start_response)
+      allow(api).to receive(:rtm_connect).and_return(rtm_connect_response)
     end
 
-    it "constructs a new RTMConnection with the results of rtm.start data" do
+    it "constructs a new RTMConnection with the results of rtm.connect data" do
       expect(described_class.build(robot, config)).to be_an_instance_of(described_class)
-    end
-
-    it "creates users with the results of rtm.start data" do
-      expect(Lita::Adapters::Slack::UserCreator).to receive(:create_users)
-
-      described_class.build(robot, config)
-    end
-
-    it "creates rooms with the results of rtm.start data" do
-      expect(Lita::Adapters::Slack::RoomCreator).to receive(:create_rooms)
-
-      described_class.build(robot, config)
-    end
-  end
-
-  describe "#im_for" do
-    before do
-      allow(Lita::Adapters::Slack::API).to receive(:new).with(config).and_return(api)
-      allow(
-        Lita::Adapters::Slack::IMMapping
-      ).to receive(:new).with(api, []).and_return(im_mapping)
-      allow(im_mapping).to receive(:im_for).with('U12345678').and_return('D024BFF1M')
-    end
-
-    let(:im_mapping) { instance_double('Lita::Adapters::Slack::IMMapping') }
-
-    it "delegates to the IMMapping" do
-      with_websocket(subject, queue) do |websocket|
-        expect(subject.im_for('U12345678')).to eq('D024BFF1M')
-      end
     end
   end
 
@@ -118,6 +85,7 @@ describe Lita::Adapters::Slack::RTMConnection, lita: true do
     context "when the WebSocket is closed from outside" do
       it "shuts down the reactor" do
         with_websocket(subject, queue) do |websocket|
+            sleep 0.1 # Since this code is run in a thread, we need to wait for it to finish
             websocket.close
             expect(EM.stopping?).to be_truthy
           end
