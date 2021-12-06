@@ -21,72 +21,81 @@ module Lita
         end
 
         def im_open(user_id)
-          response_data = call_api("im.open", user: user_id)
+          response_data = call_api('im.open', user: user_id)
 
-          SlackIM.new(response_data["channel"]["id"], user_id)
+          SlackIM.new(response_data['channel']['id'], user_id)
         end
 
         def channels_info(channel_id)
-          call_api("channels.info", channel: channel_id)
+          call_api('channels.info', channel: channel_id)
         end
 
-        def channels_list
-          call_api("channels.list")
+        def conversations_list
+          call_api('conversations.list')
+        end
+
+        def users_list
+          call_api('users.list')
         end
 
         def groups_list
-          call_api("groups.list")
+          call_api('groups.list')
         end
 
         def mpim_list
-          call_api("mpim.list")
+          call_api('mpim.list')
         end
 
         def im_list
-          call_api("im.list")
+          call_api('im.list')
         end
 
         def send_attachments(room_or_user, attachments)
           call_api(
-            "chat.postMessage",
+            'chat.postMessage',
             as_user: true,
             channel: room_or_user.id,
-            attachments: MultiJson.dump(attachments.map(&:to_hash)),
+            attachments: MultiJson.dump(attachments.map(&:to_hash))
           )
         end
 
         def send_messages(channel_id, messages)
           call_api(
-            "chat.postMessage",
+            'chat.postMessage',
             **post_message_config,
             as_user: true,
             channel: channel_id,
-            text: messages.join("\n"),
+            text: messages.join("\n")
           )
         end
 
         def set_topic(channel, topic)
-          call_api("channels.setTopic", channel: channel, topic: topic)
+          call_api('channels.setTopic', channel: channel, topic: topic)
         end
 
         def rtm_start
-          response_data = call_api("rtm.start")
+          rtm_response_data = call_api('rtm.connect')
+
+          users_response_data = users_list
+          conversations_response_data = conversations_list
+
+          channels = conversations_response_data['channels'].select { |c| c['is_channel'] }
+          groups = conversations_response_data['channels'].select { |c| c['is_group'] }
+          ims    = conversations_response_data['channels'].select { |c| c['is_im'] }
 
           TeamData.new(
-            SlackIM.from_data_array(response_data["ims"]),
-            SlackUser.from_data(response_data["self"]),
-            SlackUser.from_data_array(response_data["users"]),
-            SlackChannel.from_data_array(response_data["channels"]) +
-              SlackChannel.from_data_array(response_data["groups"]),
-            response_data["url"],
+            SlackIM.from_data_array(ims), # ims
+            SlackUser.from_data(rtm_response_data['self']), # self
+            SlackUser.from_data_array(users_response_data['members']), # users
+            SlackChannel.from_data_array(channels) +
+              SlackChannel.from_data_array(groups), # channels
+            rtm_response_data['url'] # websocket_url
           )
         end
 
         private
 
-        attr_reader :stubs
-        attr_reader :config
-        attr_reader :post_message_config
+        attr_reader :stubs, :config, :post_message_config
 
         def call_api(method, post_data = {})
           response = connection.post(
@@ -96,7 +105,7 @@ module Lita
 
           data = parse_response(response, method)
 
-          raise "Slack API call to #{method} returned an error: #{data["error"]}." if data["error"]
+          raise "Slack API call to #{method} returned an error: #{data['error']}." if data['error']
 
           data
         end
@@ -106,9 +115,7 @@ module Lita
             Faraday.new { |faraday| faraday.adapter(:test, stubs) }
           else
             options = {}
-            unless config.proxy.nil?
-              options = { proxy: config.proxy }
-            end
+            options = { proxy: config.proxy } unless config.proxy.nil?
             Faraday.new(options)
           end
         end

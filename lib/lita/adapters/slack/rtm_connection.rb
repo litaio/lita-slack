@@ -38,17 +38,19 @@ module Lita
 
         def run(queue = nil, options = {})
           EventLoop.run do
-            log.debug("Connecting to the Slack Real Time Messaging API.")
+            log.debug('Connecting to the Slack Real Time Messaging API.')
+
             @websocket = Faye::WebSocket::Client.new(
               websocket_url,
               nil,
               websocket_options.merge(options)
             )
 
-            websocket.on(:open) { log.debug("Connected to the Slack Real Time Messaging API.") }
+            websocket.on(:open) { log.debug('Connected to the Slack Real Time Messaging API.') }
             websocket.on(:message) { |event| receive_message(event) }
-            websocket.on(:close) do
-              log.info("Disconnected from Slack.")
+            websocket.on(:close) do |event|
+              log.debug("error: #{p event.reason}")
+              log.info('Disconnected from Slack.')
               EventLoop.safe_stop
             end
             websocket.on(:error) { |event| log.debug("WebSocket error: #{event.message}") }
@@ -65,7 +67,7 @@ module Lita
 
         def shut_down
           if websocket && EventLoop.running?
-            log.debug("Closing connection to the Slack Real Time Messaging API.")
+            log.debug('Closing connection to the Slack Real Time Messaging API.')
             websocket.close
           end
 
@@ -74,12 +76,7 @@ module Lita
 
         private
 
-        attr_reader :config
-        attr_reader :im_mapping
-        attr_reader :robot
-        attr_reader :robot_id
-        attr_reader :websocket
-        attr_reader :websocket_url
+        attr_reader :config, :im_mapping, :robot, :robot_id, :websocket, :websocket_url
 
         def log
           Lita.logger
@@ -87,11 +84,11 @@ module Lita
 
         def payload_for(channel, string)
           MultiJson.dump({
-            id: 1,
-            type: 'message',
-            text: string,
-            channel: channel
-          })
+                           id: 1,
+                           type: 'message',
+                           text: string,
+                           channel: channel
+                         })
         end
 
         def receive_message(event)
@@ -112,10 +109,9 @@ module Lita
 
         def websocket_options
           options = { ping: 10 }
-          options[:proxy] = { :origin => config.proxy } if config.proxy
+          options[:proxy] = { origin: config.proxy } if config.proxy
           options
         end
-
       end
     end
   end
