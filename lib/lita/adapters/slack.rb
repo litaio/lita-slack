@@ -41,9 +41,9 @@ module Lita
       def send_messages(target, strings)
         api = API.new(config)
         if target.respond_to?(:thread)
-          api.send_messages(target.room, strings, thread_ts: target.thread)
+          api.send_messages(target.room || target.user&.id, strings, thread_ts: target.thread)
         else
-          api.send_messages(target.room, strings)
+          api.send_messages(target.room || target.user&.id, strings)
         end
       end
 
