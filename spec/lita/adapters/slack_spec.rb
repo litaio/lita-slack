@@ -150,7 +150,7 @@ describe Lita::Adapters::Slack, lita: true do
 
       context "with optional thread" do
         it "sends the message to the Web API without thread_ts" do
-          expect(api).to receive(:send_messages).with(private_message_source.room, ['foo'])
+          expect(api).to receive(:send_messages).with(private_message_source.room, ['foo'], { thread_ts: nil })
 
           subject.send_messages(private_message_source, ['foo'])
         end
