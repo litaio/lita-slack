@@ -40,7 +40,7 @@ module Lita
 
       def send_messages(target, strings)
         api = API.new(config)
-        api.send_messages(target.room, strings, thread_ts: target.thread)
+        api.send_messages(target.room, strings, thread_ts: (target.thread if target.respond_to?(:thread)))
       end
 
       def set_topic(target, topic)
