@@ -62,7 +62,6 @@ module Lita
             text: messages.join("\n"),
           }.merge(post_message_config)
            .merge(additional_payload)
-          p data
 
           call_api( "chat.postMessage", **data )
         end
