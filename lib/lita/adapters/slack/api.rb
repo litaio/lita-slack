@@ -63,7 +63,7 @@ module Lita
           }.merge(post_message_config)
            .merge(additional_payload)
 
-          call_api( "chat.postMessage", data )
+          call_api( "chat.postMessage", **data )
         end
 
         def set_topic(channel, topic)
