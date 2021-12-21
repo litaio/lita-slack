@@ -118,6 +118,13 @@ module Lita
           data["thread_ts"]
         end
 
+        def user_lookup( user_id )
+          user = User.find_by_id( user_id )
+          return if user
+
+          User.create( user_id )
+        end
+
         def dispatch_message(user)
           room = Lita::Room.find_by_id(channel)
           source = SlackSource.new(user: user, room: room || channel, thread: thread)
@@ -129,8 +136,8 @@ module Lita
           robot.receive(message)
         end
 
-        def from_self?(user)
-          user.id == robot_id
+        def from_self?(user_id)
+          user_id == robot_id
         end
 
         def handle_bot_change
@@ -159,9 +166,13 @@ module Lita
           return unless supported_subtype?
           return if data["user"] == 'USLACKBOT'
 
-          user = User.find_by_id(data["user"]) || User.create(data["user"])
+          return if from_self?(data["user"])
 
-          return if from_self?(user)
+          user = User.find_by_id(data["user"])
+          if user.nil?
+            user_data = API.new(robot.config.adapters.slack).user_info(data["user"])['user']
+            user = User.create( user_id, user_data )
+          end
 
           dispatch_message(user)
         end
@@ -169,11 +180,12 @@ module Lita
         def handle_reaction
           log.debug "#{type} event received from Slack"
 
+          # avoid processing reactions added/removed by self
+          return if from_self?(data["user"])
+
           # find or create user
           user = User.find_by_id(data["user"]) || User.create(data["user"])
 
-          # avoid processing reactions added/removed by self
-          return if from_self?(user)
 
           # find or create item_user
           item_user = User.find_by_id(data["item_user"]) || User.create(data["item_user"])
