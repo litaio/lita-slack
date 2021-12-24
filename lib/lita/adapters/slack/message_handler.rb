@@ -1,5 +1,3 @@
-require_relative 'slack_source'
-
 module Lita
   module Adapters
     class Slack < Adapter
@@ -120,7 +118,7 @@ module Lita
 
         def dispatch_message(user)
           room = Lita::Room.find_by_id(channel)
-          source = SlackSource.new(user: user, room: room || channel, thread: thread)
+          source = Source.new(user: user, room: room || channel, thread: thread)
           source.private_message! if channel && channel[0] == "D"
           message = Message.new(robot, body, source)
           message.command! if source.private_message?

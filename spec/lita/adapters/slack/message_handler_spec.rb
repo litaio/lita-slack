@@ -38,14 +38,14 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
         }
       end
       let(:message) { instance_double('Lita::Message', command!: false, extensions: {}) }
-      let(:source) { instance_double('Lita::Adapters::Slack::SlackSource', private_message?: false) }
+      let(:source) { instance_double('Lita::Source', private_message?: false) }
       let(:user) { instance_double('Lita::User', id: 'U023BECGF') }
       let(:room) { instance_double('Lita::Room', id: "C2147483705", name: "general") }
 
       before do
         allow(Lita::User).to receive(:find_by_id).and_return(user)
         allow(Lita::Room).to receive(:find_by_id).and_return(room)
-        allow(Lita::Adapters::Slack::SlackSource).to receive(:new).with(
+        allow(Lita::Source).to receive(:new).with(
           user: user,
           room: room,
           thread: nil,
@@ -76,7 +76,7 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
 
         before do
           allow(Lita::Room).to receive(:find_by_id).and_return(nil)
-          allow(Lita::Adapters::Slack::SlackSource).to receive(:new).with(
+          allow(Lita::Source).to receive(:new).with(
             user: user,
             room: "D2147483705",
             thread: nil,
@@ -172,17 +172,17 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
             "thread_ts" => "1234.5678",
           }
         end
-        let(:source) { instance_double('Lita::Adapters::Slack::SlackSource', private_message?: false, thread: "1234.5678") }
+        let(:source) { instance_double('Lita::Source', room: room, private_message?: false) }
 
         before do
-          allow(Lita::Adapters::Slack::SlackSource).to receive(:new).with(
+          allow(Lita::Source).to receive(:new).with(
             user: user,
             room: room,
             thread: "1234.5678",
           ).and_return(source)
         end
 
-        it "sets the source thread option" do
+        it "records the room thread" do
           subject.handle
         end
       end

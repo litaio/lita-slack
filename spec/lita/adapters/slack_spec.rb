@@ -73,7 +73,7 @@ describe Lita::Adapters::Slack, lita: true do
     end
 
     describe "via the Web API, retrieving the roster for a group/mpim channel" do
-      let(:room_source) { Lita::Adapters::Slack::SlackSource.new(room: 'G024BE91L') }
+      let(:room_source) { Lita::Source.new(room: 'G024BE91L') }
       let(:response) do
         {
           ok: true,
@@ -95,7 +95,7 @@ describe Lita::Adapters::Slack, lita: true do
     end
 
     describe "via the Web API, retrieving the roster for an im channel" do
-      let(:room_source) { Lita::Adapters::Slack::SlackSource.new(room: 'D024BFF1M') }
+      let(:room_source) { Lita::Source.new(room: 'D024BFF1M') }
       let(:response) do
         {
           ok: true,
@@ -117,7 +117,7 @@ describe Lita::Adapters::Slack, lita: true do
   end
 
   describe "#send_messages" do
-    let(:room_source) { Lita::Adapters::Slack::SlackSource.new(room: 'C024BE91L') }
+    let(:room_source) { Lita::Source.new(room: 'C024BE91L') }
     let(:user) { Lita::User.new('U023BECGF') }
     let(:user_source) { Lita::Source.new(user: user) }
     let(:private_message_source) do
@@ -139,7 +139,8 @@ describe Lita::Adapters::Slack, lita: true do
       end
 
       context "when thread is set" do
-        let(:room_source) { Lita::Adapters::Slack::SlackSource.new(room: 'C024BE91L', thread: '12345.67890') }
+        let(:room) { Lita::Room.new('C024BE91L') }
+        let(:room_source) { Lita::Source.new(room: room, thread: '12345.67890') }
 
         it "sends the message to the Web API with thread_ts" do
           expect(api).to receive(:send_messages).with(room_source.room, ['foo'], { thread_ts: '12345.67890' })
