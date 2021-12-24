@@ -148,6 +148,22 @@ describe Lita::Adapters::Slack, lita: true do
           subject.send_messages(room_source, ['foo'])
         end
       end
+
+      context "with optional thread" do
+        it "sends the message to the Web API without thread_ts" do
+          expect(api).to receive(:send_messages).with(private_message_source.room, ['foo'])
+
+          subject.send_messages(private_message_source, ['foo'])
+        end
+      end
+
+      context "with user source" do
+        it "sends direct message to the Web API" do
+          expect(api).to receive(:send_messages).with(user_source.user.id, ['foo'])
+
+          subject.send_messages(user_source, ['foo'])
+        end
+      end
     end
   end
 
