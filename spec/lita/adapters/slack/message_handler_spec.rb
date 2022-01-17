@@ -1,10 +1,13 @@
 require "spec_helper"
+# require_relative '../../../../lib/lita/adapters/slack/slack_source'
 
 describe Lita::Adapters::Slack::MessageHandler, lita: true do
   subject { described_class.new(robot, robot_id, data) }
 
   before do
     allow(robot).to receive(:trigger)
+    allow(robot).to receive(:alias)
+    allow(robot).to receive(:receive)
     Lita::Adapters::Slack::RoomCreator.create_room(channel, robot)
   end
 
@@ -35,16 +38,17 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
         }
       end
       let(:message) { instance_double('Lita::Message', command!: false, extensions: {}) }
-      let(:source) { instance_double('Lita::Source', private_message?: false) }
+      let(:source) { instance_double('Lita::Adapters::Slack::SlackSource', private_message?: false) }
       let(:user) { instance_double('Lita::User', id: 'U023BECGF') }
       let(:room) { instance_double('Lita::Room', id: "C2147483705", name: "general") }
 
       before do
         allow(Lita::User).to receive(:find_by_id).and_return(user)
         allow(Lita::Room).to receive(:find_by_id).and_return(room)
-        allow(Lita::Source).to receive(:new).with(
+        allow(Lita::Adapters::Slack::SlackSource).to receive(:new).with(
           user: user,
-          room: room
+          room: room,
+          thread: nil,
         ).and_return(source)
         allow(Lita::Message).to receive(:new).with(robot, "Hello", source).and_return(message)
         allow(robot).to receive(:receive).with(message)
@@ -72,9 +76,10 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
 
         before do
           allow(Lita::Room).to receive(:find_by_id).and_return(nil)
-          allow(Lita::Source).to receive(:new).with(
+          allow(Lita::Adapters::Slack::SlackSource).to receive(:new).with(
             user: user,
-            room: "D2147483705"
+            room: "D2147483705",
+            thread: nil,
           ).and_return(source)
           allow(source).to receive(:private_message!).and_return(true)
           allow(source).to receive(:private_message?).and_return(true)
@@ -152,6 +157,32 @@ describe Lita::Adapters::Slack::MessageHandler, lita: true do
             source
           ).and_return(message)
 
+          subject.handle
+        end
+      end
+
+      context "when the message is in a thread" do
+        let(:data) do
+          {
+            "type" => "message",
+            "channel" => "C2147483705",
+            "user" => "U023BECGF",
+            "text" => "Hello",
+            "ts" => "1234.5678",
+            "thread_ts" => "1234.5678",
+          }
+        end
+        let(:source) { instance_double('Lita::Adapters::Slack::SlackSource', private_message?: false, thread: "1234.5678") }
+
+        before do
+          allow(Lita::Adapters::Slack::SlackSource).to receive(:new).with(
+            user: user,
+            room: room,
+            thread: "1234.5678",
+          ).and_return(source)
+        end
+
+        it "sets the source thread option" do
           subject.handle
         end
       end

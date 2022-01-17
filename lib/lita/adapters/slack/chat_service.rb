@@ -1,4 +1,4 @@
-require "lita/adapters/slack/attachment"
+require_relative "attachment"
 
 module Lita
   module Adapters

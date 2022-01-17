@@ -1,12 +1,12 @@
 require 'faye/websocket'
 require 'multi_json'
 
-require 'lita/adapters/slack/api'
-require 'lita/adapters/slack/event_loop'
-require 'lita/adapters/slack/im_mapping'
-require 'lita/adapters/slack/message_handler'
-require 'lita/adapters/slack/room_creator'
-require 'lita/adapters/slack/user_creator'
+require_relative 'api'
+require_relative 'event_loop'
+require_relative 'im_mapping'
+require_relative 'message_handler'
+require_relative 'room_creator'
+require_relative 'user_creator'
 
 module Lita
   module Adapters
@@ -17,23 +17,15 @@ module Lita
 
         class << self
           def build(robot, config)
-            new(robot, config, API.new(config).rtm_start)
+            new(robot, config, API.new(config).rtm_connect)
           end
         end
 
         def initialize(robot, config, team_data)
           @robot = robot
           @config = config
-          @im_mapping = IMMapping.new(API.new(config), team_data.ims)
           @websocket_url = team_data.websocket_url
           @robot_id = team_data.self.id
-
-          UserCreator.create_users(team_data.users, robot, robot_id)
-          RoomCreator.create_rooms(team_data.channels, robot)
-        end
-
-        def im_for(user_id)
-          im_mapping.im_for(user_id)
         end
 
         def run(queue = nil, options = {})
