@@ -1,9 +1,9 @@
 require 'faraday'
 
-require 'lita/adapters/slack/team_data'
-require 'lita/adapters/slack/slack_im'
-require 'lita/adapters/slack/slack_user'
-require 'lita/adapters/slack/slack_channel'
+require_relative 'team_data'
+require_relative 'slack_im'
+require_relative 'slack_user'
+require_relative 'slack_channel'
 
 module Lita
   module Adapters
@@ -55,29 +55,31 @@ module Lita
           )
         end
 
-        def send_messages(channel_id, messages)
-          call_api(
-            "chat.postMessage",
-            **post_message_config,
-            as_user: true,
+        def send_messages(channel_id, messages, additional_payload = {})
+          data = {
             channel: channel_id,
+            as_user: true,
             text: messages.join("\n"),
-          )
+          }.merge(post_message_config)
+           .merge(additional_payload)
+
+          call_api( "chat.postMessage", **data )
         end
 
         def set_topic(channel, topic)
           call_api("channels.setTopic", channel: channel, topic: topic)
         end
 
-        def rtm_start
-          response_data = call_api("rtm.start")
+        def rtm_connect
+          response_data = call_api("rtm.connect")
+
+          raise RuntimeError, response_data["error"] if response_data["ok"] != true
 
           TeamData.new(
-            SlackIM.from_data_array(response_data["ims"]),
+            response_data["team"]["id"],
+            response_data["team"]["name"],
+            response_data["team"]["domain"],
             SlackUser.from_data(response_data["self"]),
-            SlackUser.from_data_array(response_data["users"]),
-            SlackChannel.from_data_array(response_data["channels"]) +
-              SlackChannel.from_data_array(response_data["groups"]),
             response_data["url"],
           )
         end

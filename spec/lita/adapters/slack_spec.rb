@@ -133,9 +133,36 @@ describe Lita::Adapters::Slack, lita: true do
 
       it "does not send via the RTM api" do
         expect(rtm_connection).to_not receive(:send_messages)
-        expect(api).to receive(:send_messages).with(room_source.room, ['foo'])
+        expect(api).to receive(:send_messages).with(room_source.room, ['foo'], { thread_ts: nil })
 
         subject.send_messages(room_source, ['foo'])
+      end
+
+      context "when thread is set" do
+        let(:room) { Lita::Room.new('C024BE91L') }
+        let(:room_source) { Lita::Source.new(room: room, thread: '12345.67890') }
+
+        it "sends the message to the Web API with thread_ts" do
+          expect(api).to receive(:send_messages).with(room_source.room, ['foo'], { thread_ts: '12345.67890' })
+
+          subject.send_messages(room_source, ['foo'])
+        end
+      end
+
+      context "with optional thread" do
+        it "sends the message to the Web API without thread_ts" do
+          expect(api).to receive(:send_messages).with(private_message_source.room, ['foo'])
+
+          subject.send_messages(private_message_source, ['foo'])
+        end
+      end
+
+      context "with user source" do
+        it "sends direct message to the Web API" do
+          expect(api).to receive(:send_messages).with(user_source.user.id, ['foo'])
+
+          subject.send_messages(user_source, ['foo'])
+        end
       end
     end
   end

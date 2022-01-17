@@ -112,9 +112,13 @@ module Lita
           data["channel"]
         end
 
+        def thread
+          data["thread_ts"]
+        end
+
         def dispatch_message(user)
           room = Lita::Room.find_by_id(channel)
-          source = Source.new(user: user, room: room || channel)
+          source = Source.new(user: user, room: room || channel, thread: thread)
           source.private_message! if channel && channel[0] == "D"
           message = Message.new(robot, body, source)
           message.command! if source.private_message?

@@ -6,7 +6,7 @@ SimpleCov.formatters = [
 ]
 SimpleCov.start { add_filter "/spec/" }
 
-require "lita-slack"
+require_relative "../lib/lita-slack"
 require "lita/rspec"
 
 require "pry"
