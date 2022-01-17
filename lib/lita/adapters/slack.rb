@@ -1,5 +1,5 @@
-require 'lita/adapters/slack/chat_service'
-require 'lita/adapters/slack/rtm_connection'
+require_relative 'slack/chat_service'
+require_relative 'slack/rtm_connection'
 
 module Lita
   module Adapters
@@ -40,7 +40,7 @@ module Lita
 
       def send_messages(target, strings)
         api = API.new(config)
-        api.send_messages(channel_for(target), strings)
+        api.send_messages(target.room, strings)
       end
 
       def set_topic(target, topic)
@@ -59,14 +59,6 @@ module Lita
       private
 
       attr_reader :rtm_connection
-
-      def channel_for(target)
-        if target.private_message?
-          rtm_connection.im_for(target.user.id)
-        else
-          target.room
-        end
-      end
 
       def channel_roster(room_id, api)
         response = api.channels_info room_id

@@ -1,9 +1,9 @@
 require 'faraday'
 
-require 'lita/adapters/slack/team_data'
-require 'lita/adapters/slack/slack_im'
-require 'lita/adapters/slack/slack_user'
-require 'lita/adapters/slack/slack_channel'
+require_relative 'team_data'
+require_relative 'slack_im'
+require_relative 'slack_user'
+require_relative 'slack_channel'
 
 module Lita
   module Adapters
@@ -69,15 +69,16 @@ module Lita
           call_api("channels.setTopic", channel: channel, topic: topic)
         end
 
-        def rtm_start
-          response_data = call_api("rtm.start")
+        def rtm_connect
+          response_data = call_api("rtm.connect")
+
+          raise RuntimeError, response_data["error"] if response_data["ok"] != true
 
           TeamData.new(
-            SlackIM.from_data_array(response_data["ims"]),
+            response_data["team"]["id"],
+            response_data["team"]["name"],
+            response_data["team"]["domain"],
             SlackUser.from_data(response_data["self"]),
-            SlackUser.from_data_array(response_data["users"]),
-            SlackChannel.from_data_array(response_data["channels"]) +
-              SlackChannel.from_data_array(response_data["groups"]),
             response_data["url"],
           )
         end
