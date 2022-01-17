@@ -1,12 +1,12 @@
 require 'faye/websocket'
 require 'multi_json'
 
-require 'lita/adapters/slack/api'
-require 'lita/adapters/slack/event_loop'
-require 'lita/adapters/slack/im_mapping'
-require 'lita/adapters/slack/message_handler'
-require 'lita/adapters/slack/room_creator'
-require 'lita/adapters/slack/user_creator'
+require_relative 'api'
+require_relative 'event_loop'
+require_relative 'im_mapping'
+require_relative 'message_handler'
+require_relative 'room_creator'
+require_relative 'user_creator'
 
 module Lita
   module Adapters
